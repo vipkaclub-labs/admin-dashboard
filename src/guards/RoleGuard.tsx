@@ -1,5 +1,7 @@
-import { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+'use client';
+
+import { ReactNode, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
 
 interface RoleGuardProps {
@@ -15,19 +17,19 @@ interface RoleGuardProps {
  */
 const RoleGuard = ({ children, fallbackPath = '/login' }: RoleGuardProps) => {
   const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace(fallbackPath);
+    }
+  }, [isAuthenticated, router, fallbackPath]);
 
   if (!isAuthenticated) {
-    return <Navigate to={fallbackPath} replace />;
+    return null;
   }
 
   return <>{children}</>;
 };
 
 export default RoleGuard;
-
-
-
-
-
-
-

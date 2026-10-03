@@ -1,14 +1,16 @@
 // API Configuration
 // Get API base URL from environment variable
-// Default to localhost:3000 for development
 const getApiBaseUrl = (): string => {
-  const envUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:9000"
+  let envUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:9000/api";
+  if (!envUrl.endsWith('/api') && !envUrl.includes('/api')) {
+    envUrl = `${envUrl.replace(/\/$/, '')}/api`;
+  }
   return envUrl;
 };
 
 export const API_CONFIG = {
   BASE_URL: getApiBaseUrl(),
-  TIMEOUT: Number(import.meta.env.VITE_API_TIMEOUT) || 30000, // 30 seconds
+  TIMEOUT: Number(process.env.NEXT_PUBLIC_API_TIMEOUT) || 30000, // 30 seconds
 };
 
 export const API_ENDPOINTS = {
@@ -54,6 +56,23 @@ export const API_ENDPOINTS = {
     BALANCE: '/wallet/balance',
     CREDIT_BALANCE: '/wallet/credit-balance',
     DEBIT_BALANCE: '/wallet/debit-balance',
+    TRANSACTIONS: '/wallet/transactions',
+  },
+  // Payment Methods endpoints
+  PAYMENT_METHODS: {
+    BASE: '/payment-methods',
+    BY_ID: (id: string) => `/payment-methods/${id}`,
+    STATUS: (id: string) => `/payment-methods/${id}/status`,
+  },
+  // Audit Logs endpoints
+  AUDIT_LOGS: {
+    BASE: '/audit-logs',
+  },
+  // Promotions & Bonus endpoints
+  PROMOTIONS: {
+    BASE: '/promotions',
+    BY_ID: (id: string) => `/promotions/${id}`,
+    STATUS: (id: string) => `/promotions/${id}/status`,
   },
   // Facility endpoints
   FACILITIES: {

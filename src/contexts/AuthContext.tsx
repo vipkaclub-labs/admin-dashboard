@@ -30,6 +30,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(() => {
     // Check if user is stored in localStorage
+    if (typeof window === 'undefined') return null;
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
@@ -42,6 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const [token, setToken] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
     return localStorage.getItem('accessToken') || localStorage.getItem('token') || null;
   });
 

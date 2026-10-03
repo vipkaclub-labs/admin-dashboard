@@ -600,7 +600,9 @@ export interface Translations {
   };
   menu: {
     dashboard: string;
+    bookingsManagement?: string;
     venuesManagement: string;
+
     gamesManagement: string;
     operatorsManagement: string;
     providerAccountsManagement: string;
@@ -1248,7 +1250,9 @@ const translations: Record<AllLanguages, Translations> = {
     },
     menu: {
       dashboard: 'Dashboard',
+      bookingsManagement: 'Bookings Management',
       venuesManagement: 'Club Management',
+
       gamesManagement: 'Games Management',
       operatorsManagement: 'Karaoke Management',
       providerAccountsManagement: 'Massage Management',
@@ -1887,7 +1891,9 @@ const translations: Record<AllLanguages, Translations> = {
     },
     menu: {
       dashboard: 'Dashboard',
+      bookingsManagement: 'Quản lý Đặt phòng',
       venuesManagement: 'Quản lý Club',
+
       gamesManagement: 'Quản lý Games',
       operatorsManagement: 'Quản lý Karaoke',
       providerAccountsManagement: 'Quản lý Massage',

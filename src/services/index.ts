@@ -27,3 +27,6 @@ export * from './imageService';
 export * from './publicService';
 export * from './twoFactorService';
 export * from './healthService';
+export * from './auditLogService';
+export * from './promotionService';
+export * from './paymentMethodService';

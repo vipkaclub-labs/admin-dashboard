@@ -1,4 +1,7 @@
-import { Navigate } from 'react-router-dom';
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 interface ProtectedRouteProps {
@@ -11,10 +14,17 @@ interface ProtectedRouteProps {
  */
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [isAuthenticated, router]);
 
   // Chỉ kiểm tra đã đăng nhập - không kiểm tra role
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return null;
   }
 
   // Đã đăng nhập -> Cho phép truy cập tất cả routes

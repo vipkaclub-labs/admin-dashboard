@@ -1,5 +1,10 @@
+'use client';
+
 import React from 'react';
-import ReactQuill from 'react-quill';
+import dynamic from 'next/dynamic';
+
+// Dynamically import ReactQuill with SSR disabled (it accesses `document` at module scope)
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import 'react-quill/dist/quill.snow.css';
 
 interface RichTextEditorProps {

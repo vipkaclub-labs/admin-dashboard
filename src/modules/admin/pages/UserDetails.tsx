@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Edit, Loader2, User, Shield, Mail, UserCircle, Calendar, Clock, Trash2, X, Save } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -8,7 +8,7 @@ import { UserResponseDto, UpdateUserRequestDto } from '../../../types/api';
 
 const UserDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const router = useRouter();
   const { t } = useLanguage();
   const [user, setUser] = useState<UserResponseDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,7 +38,7 @@ const UserDetails = () => {
       toast.error(error.message || 'Không thể tải thông tin người dùng');
       // Navigate back after error
       setTimeout(() => {
-        navigate('/dashboard/users');
+        router.push('/dashboard/users');
       }, 2000);
     } finally {
       setLoading(false);
@@ -126,7 +126,7 @@ const UserDetails = () => {
       setDeleting(true);
       await userService.deleteUser(id);
       toast.success('Xóa người dùng thành công');
-      navigate('/dashboard/users');
+      router.push('/dashboard/users');
     } catch (error: any) {
       console.error('Error deleting user:', error);
       toast.error(error.message || 'Xóa người dùng thất bại. Vui lòng thử lại.');
@@ -153,7 +153,7 @@ const UserDetails = () => {
         <div className="text-center py-12">
           <p className="text-gray-500 mb-4">Không tìm thấy người dùng</p>
           <button
-            onClick={() => navigate('/dashboard/users')}
+            onClick={() => router.push('/dashboard/users')}
             className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
           >
             Quay lại danh sách
@@ -168,7 +168,7 @@ const UserDetails = () => {
       {/* Header */}
       <div className="mb-6">
         <button
-          onClick={() => navigate('/dashboard/users')}
+          onClick={() => router.push('/dashboard/users')}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />

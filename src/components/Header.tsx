@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Search, Maximize2, Mail, Bell, Power, X, Globe, List, User, Settings, HelpCircle, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,7 +13,7 @@ interface HeaderProps {
 const Header = ({ onToggleSidebar }: HeaderProps) => {
   const { user, logout } = useAuth();
   const { language, setLanguage, t } = useLanguage();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [isMessagesOpen, setIsMessagesOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -36,11 +36,11 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
       await new Promise(resolve => setTimeout(resolve, 300));
 
       // Redirect to login page
-      navigate('/login', { replace: true });
+      router.replace('/login');
     } catch (error: any) {
       console.error('Logout error:', error);
       // Still redirect to login page even if there's an error
-      navigate('/login', { replace: true });
+      router.replace('/login');
     } finally {
       setIsLoggingOut(false);
     }
@@ -166,7 +166,7 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                   <button
                     onClick={() => {
                       setIsProfileMenuOpen(false);
-                      navigate('/dashboard/profile');
+                      router.push('/dashboard/profile');
                     }}
                     className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors duration-150"
                   >
@@ -176,7 +176,7 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                   <button
                     onClick={() => {
                       setIsProfileMenuOpen(false);
-                      navigate('/dashboard/user-settings');
+                      router.push('/dashboard/user-settings');
                     }}
                     className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors duration-150"
                   >
@@ -186,7 +186,7 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                   <button
                     onClick={() => {
                       setIsProfileMenuOpen(false);
-                      navigate('/dashboard/help-support');
+                      router.push('/dashboard/help-support');
                     }}
                     className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors duration-150"
                   >

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Search, Plus, Edit, Trash2, Filter, X, Loader2, Eye, AlertTriangle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -8,7 +8,7 @@ import RichTextEditor from '../../../components/RichTextEditor';
 
 const KaraokesManagement = () => {
   const { t, language } = useLanguage();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   // Localized labels for this page
   const labels = language === 'vi' ? {
@@ -253,7 +253,7 @@ const KaraokesManagement = () => {
   };
 
   const handleViewDetail = (karaoke: Karaoke) => {
-    navigate(`/dashboard/karaoke/${karaoke.id}`);
+    router.push(`/dashboard/karaoke/${karaoke.id}`);
   };
 
   // ── Bulk Selection Handlers ──

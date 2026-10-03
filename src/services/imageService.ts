@@ -20,7 +20,7 @@ class ImageServiceImpl implements ImageService {
 
             // For file uploads, we need to handle differently without JSON content type
             const token = localStorage.getItem('accessToken') || localStorage.getItem('token');
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:9000'}${API_ENDPOINTS.IMAGES.BASE}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:9000'}${API_ENDPOINTS.IMAGES.BASE}`, {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',

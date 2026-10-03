@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Search, Filter, X, Loader2, Edit, Trash2, Shield, Eye, ChevronDown, AlertTriangle } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -12,7 +12,7 @@ import {
 
 const UsersManagement = () => {
   const { t, language } = useLanguage();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [users, setUsers] = useState<UserResponseDto[]>([]);
 
   // Localized labels for this page
@@ -404,7 +404,7 @@ const UsersManagement = () => {
   };
 
   const handleViewClick = (user: UserResponseDto) => {
-    navigate(`/dashboard/users/${user.id}`);
+    router.push(`/dashboard/users/${user.id}`);
   };
 
   // Handle clear filters

@@ -1,6 +1,7 @@
 import { ChevronRight } from 'lucide-react';
 import { CheckCircle2 } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { ALL_MENU_ITEMS } from '../utils/rolePermissions';
@@ -11,7 +12,7 @@ interface SidebarMenuProps {
 }
 
 const SidebarMenu = ({ isCollapsed, onMenuClick }: SidebarMenuProps) => {
-  const location = useLocation();
+  const pathname = usePathname();
   const { user } = useAuth();
   const { t } = useLanguage();
 
@@ -62,11 +63,11 @@ const SidebarMenu = ({ isCollapsed, onMenuClick }: SidebarMenuProps) => {
       <nav className="p-4">
         {menuItems.map((item) => {
           const Icon = item.icon;
-          const isActive = location.pathname === item.path || (item.path === '/dashboard' && location.pathname === '/dashboard');
+          const isActive = pathname === item.path || (item.path === '/dashboard' && pathname === '/dashboard');
           return (
             <Link
               key={item.id}
-              to={item.path}
+              href={item.path}
               onClick={() => onMenuClick()}
               className={`flex items-center rounded-lg cursor-pointer transition-colors ${isCollapsed ? 'justify-center px-2 py-3' : 'justify-between px-4 py-3'
                 } mb-1 ${isActive

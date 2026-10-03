@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
@@ -7,7 +7,7 @@ import { karaokeService } from '../../../services/karaokeService';
 
 const KaraokeDetails = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  const router = useRouter();
   const { t } = useLanguage();
 
   const [karaoke, setKaraoke] = useState<any>(null);
@@ -33,14 +33,14 @@ const KaraokeDetails = () => {
     } catch (error: any) {
       console.error('Error fetching karaoke details:', error);
       toast.error('Không thể tải thông tin karaoke. Vui lòng thử lại.');
-      navigate('/dashboard/karaoke');
+      router.push('/dashboard/karaoke');
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoBack = () => {
-    navigate('/dashboard/karaoke');
+    router.push('/dashboard/karaoke');
   };
 
   // Show loading state first

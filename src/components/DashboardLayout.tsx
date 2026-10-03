@@ -1,15 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
 import Header from './Header';
 import SidebarMenu from './Sidebar';
 import { useAuth } from '../contexts/AuthContext';
-import { getRoutesByRole } from '../routes/getRoutesByRole';
 
-const DashboardLayout = () => {
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+}
+
+const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { } = useAuth();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
-    const saved = localStorage.getItem('sidebarCollapsed');
-    return saved ? JSON.parse(saved) : false;
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sidebarCollapsed');
+      return saved ? JSON.parse(saved) : false;
+    }
+    return false;
   });
 
   // Save collapsed state to localStorage
@@ -25,19 +30,13 @@ const DashboardLayout = () => {
     // Menu click is handled by Link navigation in Sidebar
   };
 
-  // Get all routes (admin-only portal, no role checking needed)
-  const routes = getRoutesByRole();
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header onToggleSidebar={toggleSidebar} />
       <div className="flex flex-1 overflow-hidden">
         <SidebarMenu isCollapsed={isSidebarCollapsed} onMenuClick={handleMenuClick} />
         <main className="flex-1 overflow-auto">
-          <Routes>
-            {routes}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
+          {children}
         </main>
       </div>
     </div>
@@ -45,4 +44,3 @@ const DashboardLayout = () => {
 };
 
 export default DashboardLayout;
-

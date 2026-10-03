@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
@@ -9,7 +10,7 @@ import Setup2FA from './Setup2FA';
 const Login = () => {
   const { isAuthenticated, mustSetup2fa, setMustSetup2fa, fetchUserInfo, login } = useAuth();
   const { t } = useLanguage();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [usernameOrEmail, setUsernameOrEmail] = useState('admin@vipka.club');
   const [password, setPassword] = useState('be12345678@Ab');
   const [showPassword, setShowPassword] = useState(false);
@@ -18,9 +19,9 @@ const Login = () => {
 
   useEffect(() => {
     if (isAuthenticated && !mustSetup2fa) {
-      navigate('/dashboard', { replace: true });
+      router.replace('/dashboard');
     }
-  }, [isAuthenticated, mustSetup2fa, navigate]);
+  }, [isAuthenticated, mustSetup2fa, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +52,7 @@ const Login = () => {
       await fetchUserInfo();
 
       toast.success('Đăng nhập thành công!');
-      navigate('/dashboard', { replace: true });
+      router.replace('/dashboard');
     } catch (err: any) {
       const errorMessage = err.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.';
       setError(errorMessage);
@@ -76,7 +77,7 @@ const Login = () => {
       setMustSetup2fa(false);
 
       // Navigate to dashboard - success message is already shown in RecoveryCodesModal
-      navigate('/dashboard', { replace: true });
+      router.replace('/dashboard');
     } catch (error: any) {
       toast.error(error.message || 'Không thể lấy thông tin người dùng. Vui lòng thử lại.');
     }
@@ -156,7 +157,7 @@ const Login = () => {
 
             <div className="flex items-center justify-end">
               <Link
-                to="/forgot-password"
+                href="/forgot-password"
                 className="text-sm text-purple-600 hover:text-purple-700 font-medium"
               >
                 {t('common.forgotPassword')}

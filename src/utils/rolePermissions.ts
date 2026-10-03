@@ -14,6 +14,13 @@ import {
   Rss,
   HardDrive,
   Activity,
+  FileText,
+  CreditCard,
+  Wallet,
+  Gift,
+  BarChart3,
+  TrendingUp,
+  Calendar,
   LucideIcon
 } from 'lucide-react';
 
@@ -32,28 +39,27 @@ export interface MenuItem {
  */
 export const ALL_MENU_ITEMS: MenuItem[] = [
   { id: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: Home, translationKey: 'menu.dashboard' },
+  { id: 'bookings', label: 'Bookings Management', path: '/dashboard/bookings', icon: Calendar, translationKey: 'menu.bookingsManagement' },
   { id: 'venues', label: 'Venues Management', path: '/dashboard/clubs', icon: VenueIcon, translationKey: 'menu.venuesManagement' },
+
   { id: 'operators', label: 'Operators Management', path: '/dashboard/karaoke', icon: UserCog, translationKey: 'menu.operatorsManagement' },
   { id: 'provider-accounts', label: 'Provider Accounts Management', path: '/dashboard/massages', icon: Building2, translationKey: 'menu.providerAccountsManagement' },
+  { id: 'articles', label: 'Articles Management', path: '/dashboard/articles', icon: FileText, translationKey: 'menu.articlesManagement' },
   { id: 'roles', label: 'Roles Management', path: '/dashboard/roles', icon: Shield, translationKey: 'menu.rolesManagement' },
   { id: 'permissions', label: 'Permissions Management', path: '/dashboard/permissions', icon: Key, translationKey: 'menu.permissionsManagement' },
-  // { id: 'transactions', label: 'Transactions', path: '/dashboard/transactions', icon: CreditCard, translationKey: 'menu.transactions' },
-  // { id: 'wallet', label: 'Wallet & Payment', path: '/dashboard/wallet', icon: Wallet, translationKey: 'menu.walletPayment' },
-  // { id: 'promotions', label: 'Promotions & Bonus', path: '/dashboard/promotions', icon: Gift, translationKey: 'menu.promotionsBonus' },
-  // { id: 'reports', label: 'Reports & Statistics', path: '/dashboard/reports', icon: BarChart3, translationKey: 'menu.reports' },
-  // { id: 'analytics', label: 'Performance Analytics', path: '/dashboard/analytics', icon: TrendingUp, translationKey: 'menu.analytics' },
-  // { id: 'articles', label: 'Articles Management', path: '/dashboard/articles', icon: FileText, translationKey: 'menu.articlesManagement' },
   { id: 'users', label: 'Users Management', path: '/dashboard/users', icon: User, translationKey: 'menu.usersManagement' },
+  { id: 'wallet', label: 'Wallet & Payment', path: '/dashboard/wallet', icon: Wallet, translationKey: 'menu.walletPayment' },
+  { id: 'transactions', label: 'Transactions', path: '/dashboard/transactions', icon: CreditCard, translationKey: 'menu.transactions' },
+  { id: 'promotions', label: 'Promotions & Bonus', path: '/dashboard/promotions', icon: Gift, translationKey: 'menu.promotionsBonus' },
+  { id: 'reports', label: 'Reports & Statistics', path: '/dashboard/reports', icon: BarChart3, translationKey: 'menu.reports' },
+  { id: 'analytics', label: 'Performance Analytics', path: '/dashboard/analytics', icon: TrendingUp, translationKey: 'menu.analytics' },
   { id: 'comments', label: 'Comments Management', path: '/dashboard/comments', icon: MessageSquare, translationKey: 'menu.commentsManagement' },
   { id: 'ratings', label: 'Ratings Management', path: '/dashboard/ratings', icon: Star, translationKey: 'menu.ratingsManagement' },
   { id: 'notifications', label: 'Notifications Management', path: '/dashboard/notifications', icon: Bell, translationKey: 'menu.notificationsManagement' },
   { id: 'feeds', label: 'Feeds Management', path: '/dashboard/feeds', icon: Rss, translationKey: 'menu.feedsManagement' },
   { id: 'kyc', label: 'KYC Management', path: '/dashboard/kyc', icon: FileCheck, translationKey: 'menu.kycManagement' },
-  // { id: 'monitoring', label: 'Monitoring', path: '/dashboard/monitoring', icon: Activity, translationKey: 'menu.monitoring' },
-  // { id: 'risk', label: 'Risk Management', path: '/dashboard/risk', icon: Shield, translationKey: 'menu.riskManagement' },
-  // { id: 'api', label: 'API Management', path: '/dashboard/api', icon: Network, translationKey: 'menu.apiManagement' },
-  // { id: 'alerts', label: 'Alerts & Warnings', path: '/dashboard/alerts', icon: AlertTriangle, translationKey: 'menu.alerts' },
-  // { id: 'logs', label: 'Audit Logs', path: '/dashboard/logs', icon: FileText, translationKey: 'menu.auditLogs' },
+  { id: 'monitoring', label: 'Monitoring', path: '/dashboard/monitoring', icon: Activity, translationKey: 'menu.monitoring' },
+  { id: 'logs', label: 'Audit Logs', path: '/dashboard/audit-logs', icon: FileText, translationKey: 'menu.auditLogs' },
   { id: 'caching', label: 'Caching Management', path: '/dashboard/caching', icon: HardDrive, translationKey: 'menu.cachingManagement' },
   { id: 'system-status', label: 'System Status', path: '/dashboard/system-status', icon: Activity, translationKey: 'menu.systemStatus' },
   { id: 'settings', label: 'System Settings', path: '/dashboard/settings', icon: Settings, translationKey: 'menu.systemSettings' },
@@ -82,4 +88,3 @@ export const canAccessPath = (path: string, _role?: any): boolean => {
   const menuItem = ALL_MENU_ITEMS.find(item => item.path === path);
   return !!menuItem;
 };
-
