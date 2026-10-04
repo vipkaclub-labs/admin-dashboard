@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Wallet,
   CreditCard,
@@ -11,9 +11,14 @@ import {
   Trash2,
   AlertCircle,
   Loader2,
-  QrCode,
-  ArrowUpRight,
   ShieldCheck,
+  Copy,
+  Sparkles,
+  Layers,
+  ArrowUpRight,
+  ChevronRight,
+  ExternalLink,
+  QrCode,
 } from 'lucide-react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { walletService } from '../../../services/walletService';
@@ -27,7 +32,7 @@ import { toast } from 'react-toastify';
 const DEFAULT_METHODS: PaymentMethodItem[] = [
   {
     id: 'PM_001',
-    name: 'Vietcombank (Auto QR)',
+    name: 'Vietcombank (Auto QR VIP)',
     type: 'bank',
     status: 'active',
     dailyLimit: 500000000,
@@ -39,7 +44,7 @@ const DEFAULT_METHODS: PaymentMethodItem[] = [
   },
   {
     id: 'PM_002',
-    name: 'Techcombank Pro',
+    name: 'Techcombank Pro Business',
     type: 'bank',
     status: 'active',
     dailyLimit: 500000000,
@@ -51,7 +56,7 @@ const DEFAULT_METHODS: PaymentMethodItem[] = [
   },
   {
     id: 'PM_003',
-    name: 'MoMo Business API',
+    name: 'MoMo Business QR Gateway',
     type: 'ewallet',
     status: 'active',
     dailyLimit: 20000000,
@@ -62,7 +67,7 @@ const DEFAULT_METHODS: PaymentMethodItem[] = [
   },
   {
     id: 'PM_004',
-    name: 'ZaloPay Merchant',
+    name: 'ZaloPay Merchant Pro',
     type: 'ewallet',
     status: 'active',
     dailyLimit: 20000000,
@@ -73,7 +78,7 @@ const DEFAULT_METHODS: PaymentMethodItem[] = [
   },
   {
     id: 'PM_005',
-    name: 'VNPay Payment Gateway',
+    name: 'VNPay Payment Gateway Global',
     type: 'gateway',
     status: 'active',
     dailyLimit: 100000000,
@@ -82,8 +87,10 @@ const DEFAULT_METHODS: PaymentMethodItem[] = [
   },
 ];
 
-const WalletPayment = () => {
-  const { t } = useLanguage();
+const PRESET_LIMITS = [50000000, 100000000, 500000000, 1000000000, 2000000000];
+
+export const WalletPayment = () => {
+  const { t, language } = useLanguage();
   const [methods, setMethods] = useState<PaymentMethodItem[]>([]);
   const [loadingList, setLoadingList] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -93,6 +100,7 @@ const WalletPayment = () => {
   const [submitting, setSubmitting] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
   const [isLiveApi, setIsLiveApi] = useState<boolean>(false);
 
   const [formData, setFormData] = useState<CreatePaymentMethodDto>({
@@ -150,6 +158,14 @@ const WalletPayment = () => {
     loadStats();
   }, [loadPaymentMethods, loadStats]);
 
+  const handleCopy = (text: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    navigator.clipboard.writeText(text);
+    setCopiedAccount(text);
+    toast.info('Đã sao chép: ' + text);
+    setTimeout(() => setCopiedAccount(null), 2500);
+  };
+
   const handleToggleStatus = async (id: string) => {
     setTogglingId(id);
     const target = methods.find((m) => m.id === id);
@@ -159,26 +175,30 @@ const WalletPayment = () => {
 
     // Optimistic UI update
     setMethods((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, status: newStatus } : m))
+      prev.map((m) => (m.id === id ? { ...m, status: newStatus as any } : m))
     );
 
     try {
-      await paymentMethodService.toggleStatus(id);
+      await paymentMethodService.updatePaymentMethod(id, { status: newStatus as any });
       toast.success(
-        `Cập nhật trạng thái cổng ${target.name}: ${
-          newStatus === 'active' ? 'Đang hoạt động' : 'Tạm dừng'
-        }`
+        language === 'vi'
+          ? `Đã ${newStatus === 'active' ? 'bật hoạt động' : 'tạm dừng'} cổng thanh toán`
+          : `Payment method ${newStatus === 'active' ? 'activated' : 'paused'}`
       );
-    } catch (err: any) {
-      console.warn('Could not persist status toggle, kept locally:', err);
-      toast.info(`Cập nhật trạng thái cục bộ: ${newStatus === 'active' ? 'Hoạt động' : 'Tạm dừng'}`);
+    } catch {
+      // Keep optimistic state in fallback mode
+      toast.info(
+        language === 'vi'
+          ? `Đã cập nhật trạng thái cổng (Mô phỏng)`
+          : `Status updated (Simulated)`
+      );
     } finally {
       setTogglingId(null);
     }
   };
 
   const handleDeleteMethod = async (id: string, name: string) => {
-    if (!confirm(`Bạn có chắc muốn xóa cổng thanh toán "${name}"?`)) {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa cổng "${name}" khỏi hệ thống?`)) {
       return;
     }
 
@@ -186,11 +206,10 @@ const WalletPayment = () => {
     try {
       await paymentMethodService.deletePaymentMethod(id);
       setMethods((prev) => prev.filter((m) => m.id !== id));
-      toast.success(`Đã xóa cổng thanh toán ${name}`);
-    } catch (err: any) {
-      // If offline/fallback, remove locally
+      toast.success('Đã xóa cổng thanh toán thành công');
+    } catch {
       setMethods((prev) => prev.filter((m) => m.id !== id));
-      toast.info(`Đã gỡ bỏ cổng thanh toán ${name}`);
+      toast.info('Đã xóa cổng thanh toán (Mô phỏng)');
     } finally {
       setDeletingId(null);
     }
@@ -199,7 +218,7 @@ const WalletPayment = () => {
   const handleAddMethod = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
-      toast.error('Vui lòng nhập tên phương thức thanh toán');
+      toast.error('Vui lòng nhập tên cổng thanh toán');
       return;
     }
 
@@ -229,8 +248,8 @@ const WalletPayment = () => {
         monthlyLimit: 2000000000,
         instructions: '',
       });
-    } catch (err: any) {
-      // Fallback local creation if API call fails
+    } catch {
+      // Fallback local creation
       const fallbackItem: PaymentMethodItem = {
         id: `PM_${Date.now()}`,
         name: formData.name,
@@ -257,232 +276,323 @@ const WalletPayment = () => {
     .reduce((sum, m) => sum + (Number(m.dailyLimit) || 0), 0);
 
   return (
-    <div className="flex-1 bg-gray-50 p-6 min-h-screen">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-2xl font-bold text-gray-800">{t('pages.wallet.title')}</h1>
-            {isLiveApi ? (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Live API 200 OK
+    <div className="flex-1 bg-[#faf8f5] p-4 sm:p-6 lg:p-8 min-h-screen">
+      {/* Executive Header Banner */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-stone-900 via-stone-850 to-stone-900 text-white p-6 sm:p-7 mb-8 border border-amber-500/20 shadow-xl shadow-stone-950/10">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-amber-500/10 via-amber-600/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-amber-500/5 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div>
+            <div className="flex flex-wrap items-center gap-2.5 mb-2.5">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                VIPKA Treasury & Gateway Infrastructure
               </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">
-                Chế độ Đồng bộ
-              </span>
-            )}
+              {isLiveApi ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  Cổng thanh toán Live (200 OK)
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/25">
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  Chế độ đồng bộ dữ liệu dự phòng
+                </span>
+              )}
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-white mb-2">
+              {t('pages.wallet.title') || 'Cổng Thanh Toán & Quản Lý Ví'}
+            </h1>
+            <p className="text-sm text-stone-300 max-w-2xl">
+              {t('pages.wallet.description') ||
+                'Cấu hình tài khoản ngân hàng, hạn mức luân chuyển và cổng nạp/rút tự động cho hội viên VIP.'}
+            </p>
           </div>
-          <p className="text-gray-500 text-sm">{t('pages.wallet.description')}</p>
-        </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              loadPaymentMethods(true);
-              loadStats();
-            }}
-            disabled={refreshing || loadingList}
-            className="flex items-center gap-2 text-sm font-medium text-purple-600 hover:text-purple-700 bg-white px-3.5 py-2 rounded-lg border border-gray-200 shadow-sm transition hover:bg-gray-50 disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            <span>{refreshing ? 'Đang làm mới...' : 'Làm mới'}</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                loadPaymentMethods(true);
+                loadStats();
+              }}
+              disabled={refreshing || loadingList}
+              className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-stone-700/80 bg-stone-800/80 hover:bg-stone-700 text-stone-200 transition-all text-xs sm:text-sm font-semibold shadow-sm disabled:opacity-50"
+              title="Làm mới cấu hình"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-amber-400' : 'text-stone-300'}`} />
+              <span className="hidden sm:inline">Làm mới</span>
+            </button>
 
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition shadow-sm font-medium text-sm"
-          >
-            <Plus className="w-4 h-4" />
-            {t('pages.wallet.addMethod')}
-          </button>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 hover:from-amber-300 hover:to-amber-400 text-stone-950 font-bold text-xs sm:text-sm shadow-md shadow-amber-500/20 transition-all active:scale-[0.98]"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{t('pages.wallet.addMethod') || 'Thêm cổng thanh toán'}</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:border-blue-300 transition">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">{t('pages.wallet.totalMethods')}</p>
-              <p className="text-2xl font-bold text-gray-900">{methods.length}</p>
-              <span className="text-xs text-gray-400 mt-1 block">
-                {transactionCount} giao dịch ví đã liên kết
-              </span>
+      {/* Gateway Financial Metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-8">
+        {/* Total Methods */}
+        <div className="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-stone-400 to-stone-500" />
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+              {t('pages.wallet.totalMethods') || 'Tổng cổng thanh toán'}
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-700 group-hover:scale-105 transition-transform">
+              <Layers className="w-4 h-4" />
             </div>
-            <div className="p-3 bg-blue-50 rounded-xl text-blue-600">
-              <CreditCard className="w-6 h-6" />
-            </div>
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-stone-900 font-display">
+            {methods.length}
+          </div>
+          <div className="flex items-center gap-1.5 mt-2 text-xs text-stone-500">
+            <span>{methods.filter((m) => m.type === 'bank').length} Ngân hàng</span>
+            <span>•</span>
+            <span>{methods.filter((m) => m.type === 'ewallet').length} Ví điện tử</span>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:border-emerald-300 transition">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">{t('pages.wallet.activeMethods')}</p>
-              <p className="text-2xl font-bold text-emerald-600">{activeCount}</p>
-              <span className="text-xs text-emerald-600/80 mt-1 block font-medium">
-                {activeCount > 0 ? 'Sẵn sàng tiếp nhận thanh toán' : 'Chưa có cổng khả dụng'}
-              </span>
+        {/* Active Methods */}
+        <div className="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 to-emerald-500" />
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+              {t('pages.wallet.activeMethods') || 'Cổng đang hoạt động'}
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 group-hover:scale-105 transition-transform">
+              <ShieldCheck className="w-4 h-4" />
             </div>
-            <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600">
-              <Wallet className="w-6 h-6" />
-            </div>
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600 font-display">
+            {activeCount}
+          </div>
+          <div className="text-xs text-emerald-700/80 mt-2 font-medium">
+            {activeCount > 0 ? 'Sẵn sàng tiếp nhận giao dịch 24/7' : 'Tạm dừng tiếp nhận'}
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:border-purple-300 transition">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Hạn mức xử lý tối đa / Ngày</p>
-              <p className="text-2xl font-bold text-purple-600">
-                {(dailyCapacity / 1_000_000_000).toFixed(1)} Tỷ VNĐ
-              </p>
-              <span className="text-xs text-purple-600/80 mt-1 block font-medium">
-                Đã luân chuyển:{' '}
-                {totalProcessedVolume > 0
-                  ? `${(totalProcessedVolume / 1_000_000).toFixed(1)} tr VNĐ`
-                  : '0 VNĐ'}
-              </span>
+        {/* Daily Capacity */}
+        <div className="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-amber-500" />
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+              Hạn mức tối đa / Ngày
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 group-hover:scale-105 transition-transform">
+              <Building2 className="w-4 h-4" />
             </div>
-            <div className="p-3 bg-purple-50 rounded-xl text-purple-600">
-              <Building2 className="w-6 h-6" />
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-stone-900 font-display">
+            {(dailyCapacity / 1_000_000_000).toFixed(1)} <span className="text-sm font-semibold text-amber-700">Tỷ VNĐ</span>
+          </div>
+          <div className="text-xs text-stone-500 mt-2 font-medium">
+            Công suất luân chuyển tự động
+          </div>
+        </div>
+
+        {/* Processed Volume */}
+        <div className="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-amber-500 to-emerald-400" />
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+              Đã luân chuyển trong hệ thống
+            </span>
+            <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 group-hover:scale-105 transition-transform">
+              <Wallet className="w-4 h-4" />
             </div>
+          </div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-amber-600 font-display">
+            {totalProcessedVolume > 0
+              ? `${(totalProcessedVolume / 1_000_000).toFixed(1)}M`
+              : '0'}{' '}
+            <span className="text-sm font-semibold text-stone-400">VNĐ</span>
+          </div>
+          <div className="text-xs text-stone-500 mt-2 font-medium">
+            Từ {transactionCount} giao dịch sổ cái
           </div>
         </div>
       </div>
 
       {/* Payment Methods Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-purple-600" />
-            <h2 className="font-semibold text-gray-800 text-sm">Danh sách Cổng thanh toán & Ngân hàng đối tác</h2>
+      <div className="bg-white rounded-2xl shadow-sm border border-stone-200/80 overflow-hidden">
+        <div className="p-5 border-b border-stone-200/80 flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-700">
+              <CreditCard className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="font-bold text-stone-900 text-sm sm:text-base font-display">
+                Danh sách Cổng thanh toán & Ngân hàng đối tác
+              </h2>
+              <p className="text-xs text-stone-500">
+                Quản lý các tài khoản thu/chi tự động liên kết với hệ thống VIPKA
+              </p>
+            </div>
           </div>
-          <span className="text-xs text-gray-500">
-            Tổng cộng: <strong className="text-gray-800">{methods.length}</strong> cấu hình
+          <span className="text-xs font-semibold px-3 py-1 bg-stone-100 text-stone-700 rounded-full border border-stone-200">
+            {methods.length} cấu hình cổng
           </span>
         </div>
 
         {loadingList ? (
-          <div className="py-16 flex flex-col items-center justify-center text-gray-500 gap-3">
-            <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
-            <span className="text-sm">Đang tải danh sách cổng thanh toán từ máy chủ...</span>
+          <div className="py-16 flex flex-col items-center justify-center text-stone-500 gap-3">
+            <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+            <span className="text-sm font-medium">Đang tải danh sách cổng thanh toán từ máy chủ...</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-gray-50/80 border-b border-gray-200">
+              <thead className="bg-stone-50/80 border-b border-stone-200/60">
                 <tr>
-                  <th className="px-6 py-3.5 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-5 py-4 text-[11px] font-bold text-stone-600 uppercase tracking-wider">
                     {t('common.name')} / Đơn vị
                   </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-5 py-4 text-[11px] font-bold text-stone-600 uppercase tracking-wider">
                     {t('pages.tables.type')}
                   </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Thông tin tài khoản
+                  <th className="px-5 py-4 text-[11px] font-bold text-stone-600 uppercase tracking-wider">
+                    Thông tin tài khoản nhận
                   </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-5 py-4 text-[11px] font-bold text-stone-600 uppercase tracking-wider">
                     {t('common.status')}
                   </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-5 py-4 text-[11px] font-bold text-stone-600 uppercase tracking-wider">
                     {t('pages.wallet.dailyLimit')}
                   </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-5 py-4 text-[11px] font-bold text-stone-600 uppercase tracking-wider">
                     {t('pages.wallet.monthlyLimit')}
                   </th>
-                  <th className="px-6 py-3.5 text-xs font-semibold text-gray-600 uppercase tracking-wider text-right">
+                  <th className="px-5 py-4 text-[11px] font-bold text-stone-600 uppercase tracking-wider text-right">
                     {t('common.actions')}
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-stone-100">
                 {methods.map((method) => {
                   const isToggling = togglingId === method.id;
                   const isDeleting = deletingId === method.id;
 
                   return (
-                    <tr key={method.id} className="hover:bg-purple-50/20 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-semibold text-gray-900">{method.name}</div>
+                    <tr key={method.id} className="hover:bg-amber-50/20 transition-colors group">
+                      {/* Name & Bank */}
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        <div className="text-sm font-bold text-stone-900 group-hover:text-amber-800 transition">
+                          {method.name}
+                        </div>
                         {method.bankName && (
-                          <div className="text-xs text-gray-500 mt-0.5">{method.bankName}</div>
+                          <div className="text-xs text-stone-500 font-medium mt-0.5">
+                            {method.bankName}
+                          </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+
+                      {/* Type Badge */}
+                      <td className="px-5 py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase ${
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${
                             method.type === 'bank'
-                              ? 'bg-blue-100 text-blue-800'
+                              ? 'bg-sky-50 text-sky-800 border border-sky-200/80'
                               : method.type === 'ewallet'
-                              ? 'bg-pink-100 text-pink-800'
-                              : 'bg-emerald-100 text-emerald-800'
+                              ? 'bg-amber-50 text-amber-800 border border-amber-200/80'
+                              : 'bg-emerald-50 text-emerald-800 border border-emerald-200/80'
                           }`}
                         >
                           {method.type === 'bank'
-                            ? t('pages.wallet.bank')
+                            ? t('pages.wallet.bank') || 'Ngân hàng'
                             : method.type === 'ewallet'
-                            ? t('pages.wallet.ewallet')
-                            : t('pages.wallet.gateway')}
+                            ? t('pages.wallet.ewallet') || 'Ví điện tử'
+                            : t('pages.wallet.gateway') || 'Cổng tự động'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+
+                      {/* Account info */}
+                      <td className="px-5 py-4 whitespace-nowrap">
                         {method.accountNumber ? (
                           <div className="text-xs">
-                            <span className="font-mono font-bold text-gray-800">
-                              {method.accountNumber}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono font-bold text-stone-900">
+                                {method.accountNumber}
+                              </span>
+                              <button
+                                onClick={(e) => handleCopy(method.accountNumber!, e)}
+                                className="text-stone-400 hover:text-amber-700 p-0.5 transition"
+                                title="Sao chép số tài khoản"
+                              >
+                                {copiedAccount === method.accountNumber ? (
+                                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                ) : (
+                                  <Copy className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                            </div>
                             {method.accountName && (
-                              <div className="text-gray-500 font-medium">{method.accountName}</div>
+                              <div className="text-stone-500 text-[11px] font-medium mt-0.5">
+                                {method.accountName}
+                              </div>
                             )}
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-400 italic">API Tự động</span>
+                          <span className="text-xs text-stone-400 italic">API Tích hợp</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+
+                      {/* Status Toggle Switch */}
+                      <td className="px-5 py-4 whitespace-nowrap">
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(method.id)}
                           disabled={isToggling}
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold cursor-pointer transition ${
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold cursor-pointer transition shadow-2xs ${
                             method.status === 'active'
-                              ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200/80 hover:bg-emerald-100'
+                              : 'bg-stone-100 text-stone-600 border border-stone-200 hover:bg-stone-200'
                           } disabled:opacity-50`}
-                          title="Click để bật/tắt trạng thái"
+                          title="Bấm để bật/tắt trạng thái"
                         >
                           {isToggling ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <Loader2 className="w-3 h-3 animate-spin text-stone-500" />
                           ) : (
                             <span
                               className={`w-2 h-2 rounded-full ${
-                                method.status === 'active' ? 'bg-emerald-500' : 'bg-gray-400'
+                                method.status === 'active' ? 'bg-emerald-500' : 'bg-stone-400'
                               }`}
                             />
                           )}
                           <span>
-                            {method.status === 'active' ? t('common.active') : t('common.paused')}
+                            {method.status === 'active'
+                              ? t('common.active') || 'Hoạt động'
+                              : t('common.paused') || 'Tạm dừng'}
                           </span>
                         </button>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-700">
+
+                      {/* Daily Limit */}
+                      <td className="px-5 py-4 whitespace-nowrap text-xs sm:text-sm font-bold text-stone-800 font-mono">
                         {Number(method.dailyLimit).toLocaleString('vi-VN')} VNĐ
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+
+                      {/* Monthly Limit */}
+                      <td className="px-5 py-4 whitespace-nowrap text-xs sm:text-sm text-stone-600 font-mono">
                         {Number(method.monthlyLimit).toLocaleString('vi-VN')} VNĐ
                       </td>
-                      <td className="px-6 py-3.5 whitespace-nowrap text-sm text-right">
-                        <div className="flex items-center justify-end gap-1">
+
+                      {/* Actions */}
+                      <td className="px-5 py-4 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
                             type="button"
                             onClick={() => handleToggleStatus(method.id)}
                             disabled={isToggling}
-                            className="text-purple-600 hover:text-purple-800 p-2 hover:bg-purple-50 rounded-lg transition disabled:opacity-50"
-                            title="Bật/Tắt hoạt động"
+                            className="text-stone-500 hover:text-amber-800 p-2 hover:bg-amber-50 rounded-xl transition disabled:opacity-50"
+                            title="Chuyển trạng thái"
                           >
                             <Settings className="w-4 h-4" />
                           </button>
@@ -490,7 +600,7 @@ const WalletPayment = () => {
                             type="button"
                             onClick={() => handleDeleteMethod(method.id, method.name)}
                             disabled={isDeleting}
-                            className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition disabled:opacity-50"
+                            className="text-rose-500 hover:text-rose-700 p-2 hover:bg-rose-50 rounded-xl transition disabled:opacity-50"
                             title="Xóa cổng"
                           >
                             {isDeleting ? (
@@ -510,72 +620,87 @@ const WalletPayment = () => {
         )}
       </div>
 
-      {/* Add Method Modal */}
+      {/* Add Payment Method Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-              <h2 className="text-xl font-bold text-gray-900">{t('pages.wallet.addMethod')}</h2>
+        <div className="fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="relative bg-white rounded-3xl max-w-lg w-full border border-amber-500/20 shadow-2xl overflow-hidden animate-scale-in">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-stone-900 via-stone-850 to-stone-900 text-white p-6 border-b border-amber-500/20 relative">
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition p-1 rounded-lg"
+                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-stone-300 transition"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-7 h-7 rounded-lg bg-amber-400/20 text-amber-300 flex items-center justify-center">
+                  <CreditCard className="w-4 h-4" />
+                </span>
+                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+                  Cấu Hình Ngân Khố
+                </span>
+              </div>
+              <h2 className="text-xl font-extrabold font-display text-white">
+                {t('pages.wallet.addMethod') || 'Thêm cổng thanh toán mới'}
+              </h2>
+              <p className="text-xs text-stone-300 mt-1">
+                Khai báo tài khoản nhận tiền và hạn mức thanh toán tự động
+              </p>
             </div>
 
+            {/* Modal Form */}
             <form onSubmit={handleAddMethod} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tên phương thức / Cổng hiển thị <span className="text-red-500">*</span>
+                <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+                  Tên phương thức / Cổng hiển thị <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                  placeholder="Ví dụ: MB Bank Quick QR, MoMo Business..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
+                  placeholder="Ví dụ: MB Bank Quick VietQR VIP, MoMo Business..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/60 focus:bg-white focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 text-sm text-stone-800 font-medium"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Loại cổng <span className="text-red-500">*</span>
+                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+                    Loại cổng thanh toán <span className="text-rose-500">*</span>
                   </label>
                   <select
                     value={formData.type}
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, type: e.target.value as any }))
                     }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/60 focus:bg-white focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 text-sm text-stone-800 font-medium"
                   >
-                    <option value="bank">{t('pages.wallet.bank')}</option>
-                    <option value="ewallet">{t('pages.wallet.ewallet')}</option>
-                    <option value="gateway">{t('pages.wallet.gateway')}</option>
+                    <option value="bank">{t('pages.wallet.bank') || 'Ngân hàng (Bank)'}</option>
+                    <option value="ewallet">{t('pages.wallet.ewallet') || 'Ví điện tử (E-Wallet)'}</option>
+                    <option value="gateway">{t('pages.wallet.gateway') || 'Cổng trực tiếp (Gateway)'}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Ngân hàng / Nhà cung cấp
+                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+                    Ngân hàng / Đơn vị cung cấp
                   </label>
                   <input
                     type="text"
                     value={formData.bankName || ''}
                     onChange={(e) => setFormData((prev) => ({ ...prev, bankName: e.target.value }))}
                     placeholder="Ví dụ: MBBank, Techcombank..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/60 focus:bg-white focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 text-sm text-stone-800 font-medium"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Số tài khoản / Số ví
+                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+                    Số tài khoản / Số ví nhận
                   </label>
                   <input
                     type="text"
@@ -584,13 +709,13 @@ const WalletPayment = () => {
                       setFormData((prev) => ({ ...prev, accountNumber: e.target.value }))
                     }
                     placeholder="9988776655"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/60 focus:bg-white focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 text-sm text-stone-900 font-mono font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tên chủ tài khoản
+                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+                    Tên chủ tài khoản thụ hưởng
                   </label>
                   <input
                     type="text"
@@ -599,15 +724,15 @@ const WalletPayment = () => {
                       setFormData((prev) => ({ ...prev, accountName: e.target.value }))
                     }
                     placeholder="CONG TY CP VIPKA CLUB"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/60 focus:bg-white focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 text-sm text-stone-800 uppercase"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Hạn mức theo ngày (VNĐ)
+                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+                    Hạn mức ngày (VNĐ)
                   </label>
                   <input
                     type="number"
@@ -615,13 +740,16 @@ const WalletPayment = () => {
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, dailyLimit: Number(e.target.value) }))
                     }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/60 focus:bg-white focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 text-sm font-bold text-stone-900 font-mono"
                   />
+                  <div className="text-[11px] font-bold text-amber-700 mt-1">
+                    {Number(formData.dailyLimit || 0).toLocaleString('vi-VN')} VNĐ
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Hạn mức theo tháng (VNĐ)
+                  <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+                    Hạn mức tháng (VNĐ)
                   </label>
                   <input
                     type="number"
@@ -629,14 +757,38 @@ const WalletPayment = () => {
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, monthlyLimit: Number(e.target.value) }))
                     }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/60 focus:bg-white focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 text-sm font-bold text-stone-900 font-mono"
                   />
+                  <div className="text-[11px] font-bold text-amber-700 mt-1">
+                    {Number(formData.monthlyLimit || 0).toLocaleString('vi-VN')} VNĐ
+                  </div>
                 </div>
               </div>
 
+              {/* Quick Limit Presets */}
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-[11px] text-stone-500 font-medium">Hạn mức gợi ý:</span>
+                {PRESET_LIMITS.map((amt) => (
+                  <button
+                    key={amt}
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        dailyLimit: amt,
+                        monthlyLimit: amt * 20,
+                      }))
+                    }
+                    className="text-[11px] font-semibold px-2 py-1 rounded-lg border border-stone-200 bg-stone-50 hover:bg-amber-100 hover:text-amber-900 transition"
+                  >
+                    {amt >= 1000000000 ? `${amt / 1000000000} Tỷ` : `${amt / 1000000} Triệu`}
+                  </button>
+                ))}
+              </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Hướng dẫn chuyển tiền / Ghi chú
+                <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+                  Hướng dẫn thanh toán / Ghi chú cho khách hàng
                 </label>
                 <textarea
                   rows={2}
@@ -645,26 +797,26 @@ const WalletPayment = () => {
                     setFormData((prev) => ({ ...prev, instructions: e.target.value }))
                   }
                   placeholder="Ghi rõ nội dung chuyển khoản để nhận điểm tự động..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50/60 focus:bg-white focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 text-xs text-stone-800"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-stone-200">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   disabled={submitting}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2.5 text-xs font-semibold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-xl transition"
                 >
-                  {t('common.cancel')}
+                  {t('common.cancel') || 'Hủy'}
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition disabled:opacity-50"
+                  className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-stone-950 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 hover:from-amber-300 hover:to-amber-400 rounded-xl transition shadow-md shadow-amber-500/20 disabled:opacity-50"
                 >
-                  {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                  <span>Thêm mới</span>
+                  {submitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>Thêm cổng thanh toán</span>
                 </button>
               </div>
             </form>
