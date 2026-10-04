@@ -127,9 +127,9 @@ const Verify2FA = ({ onComplete, onCancel }: Verify2FAProps) => {
       });
       
       // Check if verification was successful
-      if (response.success !== false && !response.message?.toLowerCase().includes('incorrect') && !response.message?.toLowerCase().includes('expired')) {
-        // After successful 2FA verification, API should return accessToken
-        const newToken = response.accessToken || response.token;
+      if (response && response.success !== false && !response.message?.toLowerCase().includes('incorrect') && !response.message?.toLowerCase().includes('expired')) {
+        // After successful 2FA verification, API may return accessToken or token was saved during initial login
+        const newToken = response.accessToken || response.token || localStorage.getItem('accessToken') || localStorage.getItem('token');
         if (!newToken) {
           setVerifyError('Không nhận được access token từ server. Vui lòng thử lại.');
           return;
@@ -153,7 +153,7 @@ const Verify2FA = ({ onComplete, onCancel }: Verify2FAProps) => {
         toast.success('Xác thực 2FA thành công!');
         onComplete();
       } else {
-        setVerifyError(response.message || 'The code you entered is incorrect or expired. Please try again.');
+        setVerifyError(response?.message || 'The code you entered is incorrect or expired. Please try again.');
       }
     } catch (error: any) {
       setVerifyError(error.message || 'The code you entered is incorrect or expired. Please try again.');

@@ -1,5 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Home, TrendingUp, Bookmark, Gem, RefreshCw, AlertCircle } from 'lucide-react';
+import {
+  TrendingUp,
+  Bookmark,
+  Gem,
+  RefreshCw,
+  AlertCircle,
+  Activity,
+  Sparkles,
+  Calendar,
+} from 'lucide-react';
 import MetricCard from '../../../components/MetricCard';
 import VisitSalesChart from '../../../components/VisitSalesChart';
 import TrafficSourcesChart from '../../../components/TrafficSourcesChart';
@@ -63,68 +72,98 @@ const Dashboard = () => {
   const bookingsChange = getChangeInfo(stats?.bookings?.changePercent, 10);
   const customersChange = getChangeInfo(stats?.activeCustomers?.changePercent, 5);
 
+  const todayDate = new Date().toLocaleDateString('vi-VN', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
   return (
-    <div className="flex-1 bg-gray-50 p-6 min-h-screen">
-      {/* Dashboard Header */}
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-        <div className="flex items-center gap-2">
-          <Home className="w-5 h-5 text-purple-600" />
-          <h1 className="text-2xl font-bold text-gray-800">{t('pages.dashboard.title')}</h1>
-        </div>
+    <div className="flex-1 bg-[#faf8f5] p-4 sm:p-6 lg:p-8 min-h-screen">
+      {/* Top Welcome Banner */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-stone-900 via-stone-850 to-stone-900 text-white p-6 sm:p-8 mb-8 border border-amber-500/20 shadow-xl shadow-stone-950/10">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-amber-500/10 via-amber-600/5 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-amber-500/5 rounded-full blur-2xl pointer-events-none"></div>
 
-        <div className="flex items-center gap-3">
-          {error && (
-            <div className="flex items-center gap-1.5 text-xs text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200">
-              <AlertCircle className="w-3.5 h-3.5" />
-              <span>Dữ liệu demo offline</span>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                VIPKA Executive Control
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Hệ thống trực tuyến
+              </span>
             </div>
-          )}
+            <h1 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-white mb-2">
+              Chào mừng trở lại, <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200">VIP Admin</span>
+            </h1>
+            <p className="text-sm text-stone-300 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-amber-400/80" />
+              <span>{todayDate.charAt(0).toUpperCase() + todayDate.slice(1)}</span>
+            </p>
+          </div>
 
-          <button
-            type="button"
-            onClick={() => loadStats(true)}
-            disabled={refreshing || loading}
-            className="flex items-center gap-2 text-sm font-medium text-purple-600 hover:text-purple-700 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm transition-all hover:bg-gray-50 disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            <span>{refreshing ? 'Đang tải...' : 'Làm mới'}</span>
-          </button>
+          <div className="flex items-center gap-3 flex-wrap">
+            {error && (
+              <div className="flex items-center gap-1.5 text-xs text-amber-300 bg-amber-950/60 px-3 py-2 rounded-xl border border-amber-500/30 backdrop-blur-md">
+                <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                <span>Dữ liệu demo offline</span>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => loadStats(true)}
+              disabled={refreshing || loading}
+              className="flex items-center gap-2 text-sm font-semibold text-stone-900 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 hover:from-amber-300 hover:to-amber-500 px-4 py-2.5 rounded-xl shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              <span>{refreshing ? 'Đang đồng bộ...' : 'Làm mới dữ liệu'}</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      {/* Metric Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <MetricCard
           title={t('pages.dashboard.weeklyRevenue')}
           value={formatRevenue(stats?.revenue?.total, stats?.revenue?.currency || 'VNĐ')}
           change={revenueChange.changeText}
           changeType={revenueChange.changeType}
-          gradientFrom="from-pink-500"
-          gradientTo="to-orange-500"
+          gradientFrom="from-amber-700"
+          gradientTo="to-amber-600"
           icon={TrendingUp}
+          badge="Doanh thu"
         />
         <MetricCard
           title={t('pages.dashboard.bookingsCount')}
           value={stats?.bookings?.total !== undefined ? stats.bookings.total.toLocaleString('vi-VN') : '456'}
           change={bookingsChange.changeText}
           changeType={bookingsChange.changeType}
-          gradientFrom="from-blue-500"
-          gradientTo="to-blue-600"
+          gradientFrom="from-stone-900"
+          gradientTo="to-stone-800"
           icon={Bookmark}
+          badge="Đơn đặt"
         />
         <MetricCard
           title={t('pages.dashboard.activeCustomers')}
           value={stats?.activeCustomers?.current !== undefined ? stats.activeCustomers.current.toLocaleString('vi-VN') : '95'}
           change={customersChange.changeText}
           changeType={customersChange.changeType}
-          gradientFrom="from-green-500"
-          gradientTo="to-teal-500"
+          gradientFrom="from-emerald-800"
+          gradientTo="to-teal-800"
           icon={Gem}
+          badge="Khách VIP"
         />
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      {/* Analytics Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <VisitSalesChart
           data={stats?.accessSalesChart}
           loading={loading || refreshing}
@@ -135,7 +174,7 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Recent Tickets */}
+      {/* Recent Activity / Bookings Table */}
       <RecentTickets
         bookings={stats?.recentBookings}
         loading={loading || refreshing}

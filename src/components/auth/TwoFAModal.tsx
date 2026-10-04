@@ -158,12 +158,12 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
         type: 'TOTP',
       });
       
-      if (response.success !== false) {
+      if (response && response.success !== false) {
         // 2FA setup successful - complete the flow
         toast.success('Xác thực 2FA thành công!');
         onComplete();
       } else {
-        setVerifyError(response.message || 'The code you entered is incorrect or expired. Please try again.');
+        setVerifyError(response?.message || 'The code you entered is incorrect or expired. Please try again.');
       }
     } catch (error: any) {
       setVerifyError(error.message || 'The code you entered is incorrect or expired. Please try again.');
@@ -173,14 +173,17 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-blue-900 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-stone-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl border border-amber-500/20 max-w-lg w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900 text-center" style={{ color: '#1e3a8a' }}>
+        <div className="p-6 border-b border-gray-200 bg-gradient-to-b from-amber-50/50 to-white">
+          <div className="w-12 h-12 mx-auto mb-2 p-1 rounded-xl bg-stone-900 border border-amber-400/40 shadow flex items-center justify-center">
+            <img src="/vipka-logo.svg" alt="VIPKA Logo" className="w-full h-full object-contain" />
+          </div>
+          <h2 className="text-xl font-black text-amber-900 text-center tracking-wide">
             SET UP YOUR AUTHENTICATOR APP
           </h2>
-          <p className="text-sm text-gray-700 text-center mt-2">
+          <p className="text-sm text-gray-600 text-center mt-1">
             Scan the QR code with your Authenticator app, then enter the 6-digit code it generates
           </p>
         </div>
@@ -190,7 +193,7 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
           {/* Loading State */}
           {loading && !qrCode && !secret && (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              <Loader2 className="w-8 h-8 animate-spin text-amber-600" />
               <span className="ml-3 text-gray-600">Đang tải QR code...</span>
             </div>
           )}
@@ -198,18 +201,18 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
           {/* QR Code - Step 1 */}
           {(qrCode || secret) && (
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center mt-1">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center mt-1">
                 <span className="text-white text-xs font-bold">1</span>
               </div>
               <div className="flex-1 flex justify-center">
-                <div className="p-4 bg-white border-2 border-gray-300 rounded-lg">
+                <div className="p-4 bg-white border-2 border-amber-200/80 rounded-xl shadow-sm">
                   {qrCode && (qrCode.startsWith('data:') || qrCode.startsWith('http')) ? (
                     // If API returns QR code URL/data URL, use it
                     <img src={qrCode} alt="QR Code" className="w-64 h-64" />
                   ) : secret ? (
                     // Generate QR code from secret (fallback)
                     <QRCode
-                      value={`otpauth://totp/${user?.email || user?.username || 'Account'}:${user?.email || user?.username || 'Account'}?secret=${secret}&issuer=${encodeURIComponent('Provider Operator Portal')}`}
+                      value={`otpauth://totp/${user?.email || user?.username || 'Account'}:${user?.email || user?.username || 'Account'}?secret=${secret}&issuer=${encodeURIComponent('VIPKA Club Admin')}`}
                       size={256}
                       level="M"
                       bgColor="#FFFFFF"
@@ -228,22 +231,22 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
           {/* Manual Key - Step 2 */}
           {secret && (
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center mt-1">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center mt-1">
                 <span className="text-white text-xs font-bold">2</span>
               </div>
               <div className="flex-1 space-y-3">
                 <p className="text-sm text-gray-700">
                   If you cannot scan the QR code, enter the key manually:
                 </p>
-                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2 p-3 bg-amber-50/50 rounded-lg border border-amber-200/60">
                   <code className="flex-1 text-sm font-mono text-gray-900 break-all">{secret}</code>
                   <button
                     type="button"
                     onClick={handleCopySecret}
-                    className="p-2 hover:bg-gray-200 rounded transition-colors"
+                    className="p-2 hover:bg-amber-100/60 rounded transition-colors"
                     title="Copy to clipboard"
                   >
-                    <Copy className="w-4 h-4 text-gray-600" />
+                    <Copy className="w-4 h-4 text-amber-700" />
                   </button>
                 </div>
               </div>
@@ -253,7 +256,7 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
           {/* Show message if no secret available */}
           {!secret && !loading && (
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center mt-1">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center mt-1">
                 <span className="text-white text-xs font-bold">2</span>
               </div>
               <div className="flex-1">
@@ -266,7 +269,7 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
 
           {/* Regenerate Button - Step 3 */}
           <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center mt-1">
+            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center mt-1">
               <span className="text-white text-xs font-bold">3</span>
             </div>
             <div className="flex-1 space-y-2">
@@ -274,7 +277,7 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
                 type="button"
                 onClick={handleRegenerate}
                 disabled={loading || regenerateCooldown > 0}
-                className="w-full px-4 py-2 border-2 border-blue-600 text-blue-600 bg-white rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className="w-full px-4 py-2 border-2 border-amber-500 text-amber-700 bg-white rounded-lg hover:bg-amber-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 REGENERATE
               </button>
@@ -302,7 +305,7 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
 
           {/* Verification Code Input - Step 4 & 5 */}
           <div className="flex items-start gap-3">
-            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center mt-1">
+            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center mt-1">
               <span className="text-white text-xs font-bold">4</span>
             </div>
             <div className="flex-1 space-y-2">
@@ -321,30 +324,19 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
                   }}
                   placeholder="000000"
                   maxLength={6}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-lg tracking-widest"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-center text-lg tracking-widest font-mono"
                 />
                 <div className="flex items-center gap-2">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center">
                     <span className="text-white text-xs font-bold">5</span>
                   </div>
                   <button
                     type="button"
                     onClick={handleVerify}
                     disabled={verifying || !verificationCode.trim() || verificationCode.length !== 6}
-                    className="px-6 py-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center gap-2"
-                    style={{ backgroundColor: '#60A5FA' }}
-                    onMouseEnter={(e) => {
-                      if (!verifying && verificationCode.trim() && verificationCode.length === 6) {
-                        e.currentTarget.style.backgroundColor = '#3b82f6';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!verifying && verificationCode.trim() && verificationCode.length === 6) {
-                        e.currentTarget.style.backgroundColor = '#60A5FA';
-                      }
-                    }}
+                    className="px-6 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold flex items-center gap-2 shadow-md shadow-amber-500/20"
                   >
-                    {verifying && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {verifying && <Loader2 className="w-4 h-4 animate-spin text-white" />}
                     VERIFY
                   </button>
                 </div>
@@ -359,14 +351,14 @@ const TwoFAModal = ({ onComplete, onCancel }: TwoFAModalProps) => {
         {/* Footer - Step 6 */}
         <div className="p-6 border-t border-gray-200 flex justify-end">
           <div className="flex items-center gap-2">
-            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center">
+            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center">
               <span className="text-white text-xs font-bold">6</span>
             </div>
             <button
               type="button"
               onClick={onCancel}
               disabled={loading || verifying}
-              className="px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               CANCEL
             </button>

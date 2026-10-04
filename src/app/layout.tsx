@@ -17,11 +17,11 @@ export default function RootLayout({
         <meta charSet="UTF-8" />
         <link
           rel="icon"
-          type="image/png"
-          href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVN7Nb-a5GICVEgGOvVnh0FvL-b74WfoE8Dg&s"
+          type="image/svg+xml"
+          href="/vipka-logo.svg"
         />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>KaKa Club Admin</title>
+        <title>VIPKA Club Admin</title>
       </head>
       <body>
         <LanguageProvider>

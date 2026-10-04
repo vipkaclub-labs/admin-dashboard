@@ -82,60 +82,67 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
+    <header className="bg-white/90 backdrop-blur-md border-b border-amber-200/50 px-6 py-3.5 flex items-center justify-between sticky top-0 z-50 shadow-xs transition-all">
       <div className="flex items-center gap-4 flex-1">
         {/* Logo + Title */}
         <div className="flex items-center gap-3 min-w-[220px]">
-          <div className="w-10 h-10 rounded-lg overflow-hidden border border-purple-200 shadow-sm bg-white flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl overflow-hidden border border-amber-400/50 shadow-sm bg-stone-950 flex items-center justify-center p-0.5 relative group cursor-pointer hover:border-amber-400 transition-all">
             <img
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQVN7Nb-a5GICVEgGOvVnh0FvL-b74WfoE8Dg&s"
-              alt="KaKa Club Logo"
-              className="w-full h-full object-cover"
+              src="/vipka-logo.svg"
+              alt="VIPKA Club Logo"
+              className="w-full h-full object-contain drop-shadow"
             />
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-extrabold text-purple-700 leading-tight">
-              KaKa Club
+            <span className="text-lg font-black tracking-wider font-display bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 bg-clip-text text-transparent leading-tight">
+              VIPKA Club
             </span>
-            <span className="text-xs font-medium text-gray-500">
+            <span className="text-[10px] font-bold text-amber-700/90 tracking-widest uppercase">
               {getHeaderTitle()}
             </span>
           </div>
         </div>
 
         {/* Search + Sidebar toggle */}
-        <div className="flex items-center gap-2 ml-4 flex-1">
+        <div className="flex items-center gap-3 ml-4 flex-1 max-w-xl">
           <button
             onClick={onToggleSidebar}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-amber-50 text-stone-600 hover:text-amber-700 rounded-xl transition-colors border border-transparent hover:border-amber-200/60"
             title="Toggle sidebar"
           >
-            <List className="w-5 h-5 text-gray-600" />
+            <List className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-4 py-2 flex-1 min-w-[220px]">
-            <Search className="w-5 h-5 text-gray-400" />
+          <div className="flex items-center gap-2.5 bg-stone-50/90 hover:bg-stone-50 border border-stone-200/80 focus-within:border-amber-500/80 focus-within:bg-white focus-within:ring-2 focus-within:ring-amber-500/20 rounded-xl px-3.5 py-2 flex-1 transition-all shadow-2xs">
+            <Search className="w-4 h-4 text-stone-400" />
             <input
               type="text"
               placeholder={t('common.searchPlaceholder')}
-              className="bg-transparent border-none outline-none text-sm flex-1"
+              className="bg-transparent border-none outline-none text-sm text-stone-800 placeholder-stone-400 flex-1"
             />
+            <kbd className="hidden sm:inline-flex items-center text-[10px] font-mono font-semibold bg-white border border-stone-200 px-1.5 py-0.5 rounded-md text-stone-400 shadow-2xs">
+              ⌘K
+            </kbd>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+        {/* User Profile */}
         <div className="relative">
           <div
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded-lg px-3 py-2"
+            className="flex items-center gap-2.5 cursor-pointer hover:bg-amber-50/60 rounded-xl px-2.5 py-1.5 border border-transparent hover:border-amber-200/60 transition-all"
           >
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold bg-gradient-to-br from-purple-400 to-purple-500">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-stone-950 text-sm font-black bg-gradient-to-br from-amber-300 via-amber-400 to-amber-500 shadow-xs ring-2 ring-amber-400/30">
               {getUserInitials()}
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-medium text-gray-700">{getDisplayName()}</span>
+            <div className="flex flex-col text-left">
+              <span className="text-sm font-bold text-stone-800 leading-tight">{getDisplayName()}</span>
+              <span className="text-[10px] font-extrabold text-amber-700 uppercase tracking-wider">
+                VIP Admin
+              </span>
             </div>
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-stone-400 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </div>
@@ -147,11 +154,11 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                 className="fixed inset-0 z-40"
                 onClick={() => setIsProfileMenuOpen(false)}
               ></div>
-              <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-amber-200/60 z-50 overflow-hidden animate-scale-in">
                 {/* User Info Section */}
-                <div className="p-4 border-b border-gray-200">
+                <div className="p-4 border-b border-gray-100 bg-gradient-to-b from-amber-50/40 to-white">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-purple-400 to-purple-500">
+                    <div className="w-11 h-11 rounded-xl flex items-center justify-center text-stone-950 font-black bg-gradient-to-br from-amber-300 via-amber-400 to-amber-500 shadow-xs ring-2 ring-amber-400/30">
                       {getUserInitials()}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -228,20 +235,20 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
               document.exitFullscreen();
             }
           }}
-          className="p-2 hover:bg-gray-100 rounded-lg relative"
+          className="p-2 hover:bg-amber-50 text-stone-600 hover:text-amber-700 rounded-xl transition-all border border-transparent hover:border-amber-200/60 relative"
           title={t('common.fullscreen')}
         >
-          <Maximize2 className="w-5 h-5 text-gray-600" />
+          <Maximize2 className="w-5 h-5" />
         </button>
 
         <div className="relative">
           <button
             onClick={() => setIsMessagesOpen(!isMessagesOpen)}
-            className="p-2 hover:bg-gray-100 rounded-lg relative"
+            className="p-2 hover:bg-amber-50 text-stone-600 hover:text-amber-700 rounded-xl transition-all border border-transparent hover:border-amber-200/60 relative"
             title={t('common.messages')}
           >
-            <Mail className="w-5 h-5 text-gray-600" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-yellow-400 rounded-full"></span>
+            <Mail className="w-5 h-5" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full ring-2 ring-white"></span>
           </button>
 
           {/* Messages Dropdown */}
@@ -251,64 +258,67 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                 className="fixed inset-0 z-40"
                 onClick={() => setIsMessagesOpen(false)}
               ></div>
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
-                <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-900">{t('common.messages')}</h3>
+              <div className="absolute right-0 mt-3 w-80 sm:w-88 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-stone-900/10 border border-amber-200/80 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="px-4 py-3 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-b border-amber-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                    <h3 className="font-semibold text-stone-900 text-sm">{t('common.messages')}</h3>
+                  </div>
                   <button
                     onClick={() => setIsMessagesOpen(false)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="p-1 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="max-h-96 overflow-y-auto">
+                <div className="max-h-80 overflow-y-auto divide-y divide-stone-100">
                   {/* Sample Messages */}
-                  <div className="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer">
+                  <div className="p-3.5 hover:bg-amber-50/50 transition-colors cursor-pointer group">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-purple-600 font-semibold text-sm">U</span>
+                      <div className="w-9 h-9 bg-gradient-to-br from-amber-500 to-amber-600 text-stone-950 font-bold rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm shadow-amber-500/20 text-xs">
+                        U
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-sm font-medium text-gray-900">User Name</p>
-                          <span className="text-xs text-gray-500">2h ago</span>
+                        <div className="flex items-center justify-between mb-0.5">
+                          <p className="text-xs font-semibold text-stone-900 group-hover:text-amber-800 transition-colors">User Name</p>
+                          <span className="text-[10px] text-stone-600">2h ago</span>
                         </div>
-                        <p className="text-sm text-gray-600 truncate">New message about your recent activity...</p>
+                        <p className="text-xs text-stone-600 truncate">New message about your recent activity...</p>
                       </div>
                     </div>
                   </div>
-                  <div className="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer">
+                  <div className="p-3.5 hover:bg-amber-50/50 transition-colors cursor-pointer group">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-blue-600 font-semibold text-sm">A</span>
+                      <div className="w-9 h-9 bg-stone-900 text-amber-400 font-bold rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm text-xs">
+                        A
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-sm font-medium text-gray-900">Admin</p>
-                          <span className="text-xs text-gray-500">5h ago</span>
+                        <div className="flex items-center justify-between mb-0.5">
+                          <p className="text-xs font-semibold text-stone-900 group-hover:text-amber-800 transition-colors">Admin</p>
+                          <span className="text-[10px] text-stone-600">5h ago</span>
                         </div>
-                        <p className="text-sm text-gray-600 truncate">System notification regarding your account...</p>
+                        <p className="text-xs text-stone-600 truncate">System notification regarding your account...</p>
                       </div>
                     </div>
                   </div>
-                  <div className="p-4 hover:bg-gray-50 cursor-pointer">
+                  <div className="p-3.5 hover:bg-amber-50/50 transition-colors cursor-pointer group">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-green-600 font-semibold text-sm">S</span>
+                      <div className="w-9 h-9 bg-emerald-100 text-emerald-700 font-bold rounded-xl flex items-center justify-center flex-shrink-0 text-xs">
+                        S
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-sm font-medium text-gray-900">Support</p>
-                          <span className="text-xs text-gray-500">1d ago</span>
+                        <div className="flex items-center justify-between mb-0.5">
+                          <p className="text-xs font-semibold text-stone-900 group-hover:text-amber-800 transition-colors">Support</p>
+                          <span className="text-[10px] text-stone-600">1d ago</span>
                         </div>
-                        <p className="text-sm text-gray-600 truncate">Response to your support ticket...</p>
+                        <p className="text-xs text-stone-600 truncate">Response to your support ticket...</p>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="p-4 border-t border-gray-200">
-                  <button className="w-full text-center text-sm text-purple-600 hover:text-purple-700 font-medium">
-                    {t('common.viewAll')} {t('common.messages')}
+                <div className="p-2.5 border-t border-amber-100 bg-stone-50/50 text-center">
+                  <button className="text-xs text-amber-700 hover:text-amber-800 font-medium py-1 px-3 rounded-lg hover:bg-amber-100/50 transition-all">
+                    {t('common.viewAll')} {t('common.messages')} →
                   </button>
                 </div>
               </div>
@@ -319,11 +329,11 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
         <div className="relative">
           <button
             onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-            className="p-2 hover:bg-gray-100 rounded-lg relative"
+            className="p-2 hover:bg-amber-50 text-stone-600 hover:text-amber-700 rounded-xl transition-all border border-transparent hover:border-amber-200/60 relative"
             title={t('common.notifications')}
           >
-            <Bell className="w-5 h-5 text-gray-600" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            <Bell className="w-5 h-5" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
           </button>
 
           {/* Notifications Dropdown */}
@@ -333,78 +343,80 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                 className="fixed inset-0 z-40"
                 onClick={() => setIsNotificationsOpen(false)}
               ></div>
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
-                <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-900">{t('common.notifications')}</h3>
+              <div className="absolute right-0 mt-3 w-80 sm:w-88 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-stone-900/10 border border-amber-200/80 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="px-4 py-3 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-b border-amber-100 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                    <h3 className="font-semibold text-stone-900 text-sm">{t('common.notifications')}</h3>
+                  </div>
                   <button
                     onClick={() => setIsNotificationsOpen(false)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="p-1 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="max-h-96 overflow-y-auto">
-                  {/* Sample Notifications */}
-                  <div className="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer">
+                <div className="max-h-80 overflow-y-auto divide-y divide-stone-100">
+                  <div className="p-3.5 hover:bg-amber-50/50 transition-colors cursor-pointer group">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Bell className="w-5 h-5 text-red-600" />
+                      <div className="w-9 h-9 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <Bell className="w-4 h-4" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-sm font-medium text-gray-900">Alert</p>
-                          <span className="text-xs text-gray-500">1m ago</span>
+                        <div className="flex items-center justify-between mb-0.5">
+                          <p className="text-xs font-semibold text-stone-900 group-hover:text-amber-800 transition-colors">Alert</p>
+                          <span className="text-[10px] text-stone-600">1m ago</span>
                         </div>
-                        <p className="text-sm text-gray-600">System maintenance scheduled for tonight at 2 AM</p>
+                        <p className="text-xs text-stone-600">System maintenance scheduled for tonight at 2 AM</p>
                       </div>
                     </div>
                   </div>
-                  <div className="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer">
+                  <div className="p-3.5 hover:bg-amber-50/50 transition-colors cursor-pointer group">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-green-600 font-semibold text-lg">✓</span>
+                      <div className="w-9 h-9 bg-emerald-100 text-emerald-700 font-bold rounded-xl flex items-center justify-center flex-shrink-0 text-sm">
+                        ✓
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-sm font-medium text-gray-900">Success</p>
-                          <span className="text-xs text-gray-500">30m ago</span>
+                        <div className="flex items-center justify-between mb-0.5">
+                          <p className="text-xs font-semibold text-stone-900 group-hover:text-amber-800 transition-colors">Success</p>
+                          <span className="text-[10px] text-stone-600">30m ago</span>
                         </div>
-                        <p className="text-sm text-gray-600">New operator account created successfully</p>
+                        <p className="text-xs text-stone-600">New operator account created successfully</p>
                       </div>
                     </div>
                   </div>
-                  <div className="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer">
+                  <div className="p-3.5 hover:bg-amber-50/50 transition-colors cursor-pointer group">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-yellow-600 font-semibold text-lg">!</span>
+                      <div className="w-9 h-9 bg-amber-100 text-amber-700 font-bold rounded-xl flex items-center justify-center flex-shrink-0 text-sm">
+                        !
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-sm font-medium text-gray-900">Warning</p>
-                          <span className="text-xs text-gray-500">2h ago</span>
+                        <div className="flex items-center justify-between mb-0.5">
+                          <p className="text-xs font-semibold text-stone-900 group-hover:text-amber-800 transition-colors">Warning</p>
+                          <span className="text-[10px] text-stone-600">2h ago</span>
                         </div>
-                        <p className="text-sm text-gray-600">High transaction volume detected</p>
+                        <p className="text-xs text-stone-600">High transaction volume detected</p>
                       </div>
                     </div>
                   </div>
-                  <div className="p-4 hover:bg-gray-50 cursor-pointer">
+                  <div className="p-3.5 hover:bg-amber-50/50 transition-colors cursor-pointer group">
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-blue-600 font-semibold text-lg">i</span>
+                      <div className="w-9 h-9 bg-sky-100 text-sky-700 font-bold rounded-xl flex items-center justify-center flex-shrink-0 text-sm">
+                        i
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <p className="text-sm font-medium text-gray-900">Info</p>
-                          <span className="text-xs text-gray-500">1d ago</span>
+                        <div className="flex items-center justify-between mb-0.5">
+                          <p className="text-xs font-semibold text-stone-900 group-hover:text-amber-800 transition-colors">Info</p>
+                          <span className="text-[10px] text-stone-600">1d ago</span>
                         </div>
-                        <p className="text-sm text-gray-600">Weekly report is ready for review</p>
+                        <p className="text-xs text-stone-600">Weekly report is ready for review</p>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="p-4 border-t border-gray-200">
-                  <button className="w-full text-center text-sm text-purple-600 hover:text-purple-700 font-medium">
-                    {t('common.viewAll')} {t('common.notifications')}
+                <div className="p-2.5 border-t border-amber-100 bg-stone-50/50 text-center">
+                  <button className="text-xs text-amber-700 hover:text-amber-800 font-medium py-1 px-3 rounded-lg hover:bg-amber-100/50 transition-all">
+                    {t('common.viewAll')} {t('common.notifications')} →
                   </button>
                 </div>
               </div>
@@ -416,12 +428,13 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
         <div className="relative">
           <button
             onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
-            className="p-2 hover:bg-gray-100 rounded-lg relative"
+            className="p-2 hover:bg-amber-50 text-stone-600 hover:text-amber-700 rounded-xl transition-all border border-transparent hover:border-amber-200/60 relative"
             title={t('common.language')}
           >
-            <Globe className="w-5 h-5 text-gray-600" />
+            <Globe className="w-5 h-5" />
           </button>
 
+          {/* Language Dropdown */}
           {/* Language Dropdown */}
           {isLanguageMenuOpen && (
             <>
@@ -429,24 +442,29 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                 className="fixed inset-0 z-40"
                 onClick={() => setIsLanguageMenuOpen(false)}
               ></div>
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-80 overflow-y-auto">
-                <div className="p-2">
+              <div className="absolute right-0 mt-3 w-52 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-stone-900/10 border border-amber-200/80 z-50 max-h-80 overflow-y-auto p-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="px-3 py-1.5 mb-1 text-[10px] font-bold text-stone-400 uppercase tracking-wider">
+                  {t('common.language')}
+                </div>
+                <div className="space-y-1">
                   {getSupportedLanguages().map((lang) => {
                     const langName = getLanguageName(lang.code, language);
+                    const isCurrent = language === lang.code;
                     return (
                       <button
                         key={lang.code}
                         onClick={() => handleLanguageChange(lang.code)}
-                        className={`w-full px-4 py-2 text-left text-sm rounded-lg flex items-center justify-between ${language === lang.code
-                          ? 'bg-purple-50 text-purple-600 font-medium'
-                          : 'text-gray-700 hover:bg-gray-50'
-                          }`}
+                        className={`w-full px-3 py-2 text-left text-xs rounded-xl flex items-center justify-between transition-all ${
+                          isCurrent
+                            ? 'bg-gradient-to-r from-amber-500/20 to-amber-500/10 text-amber-900 font-semibold border border-amber-300/40 shadow-sm'
+                            : 'text-stone-700 hover:bg-stone-100/80 hover:text-stone-900'
+                        }`}
                       >
                         <span>{langName}</span>
-                        {language === lang.code && (
-                          <svg className="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
+                        {isCurrent && (
+                          <span className="w-4 h-4 rounded-full bg-amber-500 text-stone-950 flex items-center justify-center text-[10px] font-bold">
+                            ✓
+                          </span>
                         )}
                       </button>
                     );
@@ -462,4 +480,3 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
 };
 
 export default Header;
-

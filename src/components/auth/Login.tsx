@@ -98,10 +98,22 @@ const Login = () => {
       {mustSetup2fa && (
         <Setup2FA onComplete={handle2FAComplete} onCancel={handle2FACancel} />
       )}
-      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-purple-700 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
-          <div className="px-8 py-8 bg-gradient-to-r from-purple-600 to-blue-600">
-            <h1 className="text-2xl font-bold text-white text-center">Admin Karaoke</h1>
+      <div className="min-h-screen bg-[#0d0f12] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(217,119,6,0.25),rgba(0,0,0,0))] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl border border-amber-500/20 overflow-hidden">
+          <div className="px-8 pt-8 pb-6 bg-gradient-to-b from-stone-900 to-stone-950 text-center border-b border-amber-500/20">
+            <div className="w-20 h-20 mx-auto mb-3 p-1.5 rounded-2xl bg-stone-900 border border-amber-400/40 shadow-lg shadow-amber-500/10 flex items-center justify-center">
+              <img
+                src="/vipka-logo.svg"
+                alt="VIPKA Club Logo"
+                className="w-full h-full object-contain drop-shadow"
+              />
+            </div>
+            <h1 className="text-2xl font-black tracking-wide bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 bg-clip-text text-transparent">
+              VIPKA CLUB
+            </h1>
+            <p className="text-xs font-semibold text-amber-200/80 tracking-widest uppercase mt-1">
+              Admin Management Portal
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
@@ -117,7 +129,7 @@ const Login = () => {
                   value={usernameOrEmail}
                   onChange={(e) => setUsernameOrEmail(e.target.value)}
                   disabled={loading}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
                   placeholder={t('common.emailOrUsername')}
                 />
               </div>
@@ -135,7 +147,7 @@ const Login = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none transition disabled:bg-gray-100 disabled:cursor-not-allowed"
                   placeholder="••••••••"
                 />
                 <button
@@ -158,7 +170,7 @@ const Login = () => {
             <div className="flex items-center justify-end">
               <Link
                 href="/forgot-password"
-                className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                className="text-sm text-amber-600 hover:text-amber-700 font-medium"
               >
                 {t('common.forgotPassword')}
               </Link>
@@ -167,9 +179,9 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 text-stone-950 py-3.5 rounded-xl font-bold shadow-lg shadow-amber-500/25 hover:from-amber-600 hover:to-yellow-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {loading && <Loader2 className="w-5 h-5 animate-spin" />}
+              {loading && <Loader2 className="w-5 h-5 animate-spin text-stone-950" />}
               {loading ? t('common.loggingIn') : t('common.login')}
             </button>
           </form>

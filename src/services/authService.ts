@@ -469,7 +469,7 @@ class AuthServiceImpl implements AuthService {
         }
       );
       // Handle both direct response and nested data structure
-      const responseData = response.data;
+      const responseData = (response.data && typeof response.data === 'object') ? response.data : {};
       return {
         ...responseData,
         qrCode: responseData.qrCode || responseData.data?.qrCode,
@@ -495,7 +495,7 @@ class AuthServiceImpl implements AuthService {
         }
       );
       // Handle both direct response and nested data structure
-      const responseData = response.data;
+      const responseData = (response.data && typeof response.data === 'object') ? response.data : {};
       console.log('Raw Regenerate API Response:', responseData);
       
       // Extract qrCodeUrl and secret from various possible response structures
@@ -519,14 +519,19 @@ class AuthServiceImpl implements AuthService {
 
   async setup2FAEmail(userId: string): Promise<Setup2FAEmailResponse> {
     try {
-      const response = await apiClient.post<Setup2FAEmailResponse>(
+      const response = await apiClient.post<any>(
         API_ENDPOINTS.AUTH.SETUP_2FA,
         {
           userId,
           type: 'EMAIL',
         }
       );
-      return response.data;
+      const responseData = (response.data && typeof response.data === 'object') ? response.data : {};
+      return {
+        success: true,
+        message: response.message,
+        ...responseData,
+      };
     } catch (error) {
       const apiError = error as ApiError;
       throw new Error(
@@ -537,11 +542,16 @@ class AuthServiceImpl implements AuthService {
 
   async verify2FA(request: Verify2FARequest): Promise<Verify2FAResponse> {
     try {
-      const response = await apiClient.post<Verify2FAResponse>(
+      const response = await apiClient.post<any>(
         API_ENDPOINTS.AUTH.VERIFY_2FA,
         request
       );
-      return response.data;
+      const responseData = (response.data && typeof response.data === 'object') ? response.data : {};
+      return {
+        success: true,
+        message: response.message || 'Xác thực 2FA thành công',
+        ...responseData,
+      };
     } catch (error) {
       const apiError = error as ApiError;
       throw new Error(
@@ -553,8 +563,13 @@ class AuthServiceImpl implements AuthService {
   async disable2FA(request: Disable2FARequest): Promise<Disable2FAResponse> {
     try {
       const endpoint = `${API_ENDPOINTS.AUTH.DISABLE_2FA}?userId=${encodeURIComponent(request.userId)}&type=${request.type}`;
-      const response = await apiClient.delete<Disable2FAResponse>(endpoint);
-      return response.data;
+      const response = await apiClient.delete<any>(endpoint);
+      const responseData = (response.data && typeof response.data === 'object') ? response.data : {};
+      return {
+        success: true,
+        message: response.message || 'Tắt 2FA thành công',
+        ...responseData,
+      };
     } catch (error) {
       const apiError = error as ApiError;
       throw new Error(

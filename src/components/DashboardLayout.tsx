@@ -31,11 +31,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-[#faf8f5] flex flex-col font-sans antialiased text-stone-800">
       <Header onToggleSidebar={toggleSidebar} />
       <div className="flex flex-1 overflow-hidden">
         <SidebarMenu isCollapsed={isSidebarCollapsed} onMenuClick={handleMenuClick} />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto custom-scrollbar">
           {children}
         </main>
       </div>

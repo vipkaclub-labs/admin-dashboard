@@ -153,11 +153,11 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
         type: selectedMethod,
       });
 
-      if (response.success !== false) {
+      if (response && response.success !== false) {
         // Show success message modal instead of recovery codes modal
         setSetupComplete(true);
       } else {
-        setVerifyError(response.message || 'The code you entered is incorrect or expired. Please try again.');
+        setVerifyError(response?.message || 'The code you entered is incorrect or expired. Please try again.');
       }
     } catch (error: any) {
       setVerifyError(error.message || 'The code you entered is incorrect or expired. Please try again.');
@@ -196,14 +196,17 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
   // Email OTP Verification View
   if (showEmailVerification && selectedMethod === 'EMAIL') {
     return (
-      <div className="fixed inset-0 bg-blue-900 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl max-w-lg w-full">
+      <div className="fixed inset-0 bg-stone-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl shadow-2xl border border-amber-500/20 max-w-lg w-full overflow-hidden">
           {/* Header */}
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-900 text-center" style={{ color: '#1e3a8a' }}>
+          <div className="p-6 border-b border-gray-200 bg-gradient-to-b from-amber-50/50 to-white">
+            <div className="w-12 h-12 mx-auto mb-2 p-1 rounded-xl bg-stone-900 border border-amber-400/40 shadow flex items-center justify-center">
+              <img src="/vipka-logo.svg" alt="VIPKA Logo" className="w-full h-full object-contain" />
+            </div>
+            <h2 className="text-xl font-black text-amber-900 text-center tracking-wide">
               VERIFY YOUR EMAIL
             </h2>
-            <p className="text-sm text-gray-700 text-center mt-2">
+            <p className="text-sm text-gray-600 text-center mt-1">
               We've sent a verification code to your email. Enter the code below to activate two-factor authentication.
             </p>
           </div>
@@ -213,7 +216,7 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
             {/* Verification Code Input - Step 1 & 2 */}
             <div className="space-y-2">
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center mt-1">
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center mt-1">
                   <span className="text-white text-xs font-bold">1</span>
                 </div>
                 <div className="flex-1">
@@ -232,30 +235,19 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
                       }}
                       placeholder="000000"
                       maxLength={6}
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center text-lg tracking-widest"
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-center text-lg tracking-widest font-mono"
                     />
                     <div className="flex items-center gap-2">
-                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center">
                         <span className="text-white text-xs font-bold">2</span>
                       </div>
                       <button
                         type="button"
                         onClick={handleVerify}
                         disabled={verifying || !verificationCode.trim() || verificationCode.length !== 6}
-                        className="px-6 py-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center gap-2"
-                        style={{ backgroundColor: '#60A5FA' }}
-                        onMouseEnter={(e) => {
-                          if (!verifying && verificationCode.trim() && verificationCode.length === 6) {
-                            e.currentTarget.style.backgroundColor = '#3b82f6';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!verifying && verificationCode.trim() && verificationCode.length === 6) {
-                            e.currentTarget.style.backgroundColor = '#60A5FA';
-                          }
-                        }}
+                        className="px-6 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold flex items-center gap-2 shadow-md shadow-amber-500/20"
                       >
-                        {verifying && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {verifying && <Loader2 className="w-4 h-4 animate-spin text-white" />}
                         VERIFY
                       </button>
                     </div>
@@ -275,7 +267,7 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
             {/* Resend Code Section - Step 4 & 3 */}
             <div className="space-y-3 pt-4 border-t border-gray-200">
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center mt-1">
+                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center mt-1">
                   <span className="text-white text-xs font-bold">4</span>
                 </div>
                 <div className="flex-1">
@@ -289,25 +281,14 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center">
                       <span className="text-white text-xs font-bold">3</span>
                     </div>
                     <button
                       type="button"
                       onClick={handleResendCode}
                       disabled={loading || resendCooldown > 0}
-                      className="flex-1 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                      style={{ backgroundColor: '#60A5FA' }}
-                      onMouseEnter={(e) => {
-                        if (!loading && resendCooldown === 0) {
-                          e.currentTarget.style.backgroundColor = '#3b82f6';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!loading && resendCooldown === 0) {
-                          e.currentTarget.style.backgroundColor = '#60A5FA';
-                        }
-                      }}
+                      className="flex-1 px-4 py-2 border-2 border-amber-500 text-amber-700 bg-white rounded-lg hover:bg-amber-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold"
                     >
                       RESEND CODE
                     </button>
@@ -320,14 +301,14 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
           {/* Footer - Step 5 */}
           <div className="p-6 border-t border-gray-200 flex justify-end">
             <div className="flex items-center gap-2">
-              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center">
+              <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center">
                 <span className="text-white text-xs font-bold">5</span>
               </div>
               <button
                 type="button"
                 onClick={onCancel}
                 disabled={loading || verifying}
-                className="px-4 py-2 bg-white border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
                 CANCEL
               </button>
@@ -345,28 +326,31 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
 
   // Method Selection View
   return (
-    <div className="fixed inset-0 bg-blue-900 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+    <div className="fixed inset-0 bg-stone-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl border border-amber-500/20 max-w-md w-full overflow-hidden">
         {/* Header */}
-        <div className="p-6 pb-4">
-          <h2 className="text-2xl font-bold text-center" style={{ color: '#1e3a8a' }}>
+        <div className="p-6 pb-4 bg-gradient-to-b from-amber-50/50 to-white border-b border-gray-100">
+          <div className="w-12 h-12 mx-auto mb-2 p-1 rounded-xl bg-stone-900 border border-amber-400/40 shadow flex items-center justify-center">
+            <img src="/vipka-logo.svg" alt="VIPKA Logo" className="w-full h-full object-contain" />
+          </div>
+          <h2 className="text-xl font-black text-amber-900 text-center tracking-wide">
             SET UP TWO-FACTOR AUTHENTICATION
           </h2>
-          <p className="text-sm text-gray-600 text-center mt-2">
+          <p className="text-sm text-gray-600 text-center mt-1">
             To keep your account secure, 2FA is required. Choose your preferred method below.
           </p>
         </div>
 
         {/* Body */}
-        <div className="px-6 pb-4">
+        <div className="px-6 py-4">
           {/* Method Selection - Step 1 */}
-          <div className="flex items-start gap-3 mb-4">
-            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center mt-1">
+          <div className="flex items-start gap-3 mb-2">
+            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center mt-1">
               <span className="text-white text-xs font-bold">1</span>
             </div>
             <div className="flex-1 space-y-3">
-              <label className="flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors bg-white hover:bg-gray-50"
-                style={{ borderColor: selectedMethod === 'TOTP' ? '#3b82f6' : '#e5e7eb' }}>
+              <label className="flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all bg-white hover:bg-amber-50/40"
+                style={{ borderColor: selectedMethod === 'TOTP' ? '#d97706' : '#e5e7eb' }}>
                 <input
                   type="radio"
                   name="2faMethod"
@@ -378,13 +362,13 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
                     setShowEmailVerification(false);
                     setVerifyError(null);
                   }}
-                  className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  className="w-4 h-4 text-amber-600 focus:ring-amber-500"
                 />
-                <span className="ml-3 text-gray-900 font-medium">Authenticator App</span>
+                <span className="ml-3 text-gray-900 font-semibold">Authenticator App</span>
               </label>
 
-              <label className="flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors bg-white hover:bg-gray-50"
-                style={{ borderColor: selectedMethod === 'EMAIL' ? '#3b82f6' : '#e5e7eb' }}>
+              <label className="flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all bg-white hover:bg-amber-50/40"
+                style={{ borderColor: selectedMethod === 'EMAIL' ? '#d97706' : '#e5e7eb' }}>
                 <input
                   type="radio"
                   name="2faMethod"
@@ -396,9 +380,9 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
                     setShowEmailVerification(false);
                     setVerifyError(null);
                   }}
-                  className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                  className="w-4 h-4 text-amber-600 focus:ring-amber-500"
                 />
-                <span className="ml-3 text-gray-900 font-medium">Email OTP</span>
+                <span className="ml-3 text-gray-900 font-semibold">Email OTP</span>
               </label>
             </div>
           </div>
@@ -408,41 +392,30 @@ const Setup2FA = ({ onComplete, onCancel }: Setup2FAProps) => {
         <div className="p-6 pt-0 space-y-3">
           {/* Primary Button - Step 2 */}
           <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center">
+            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center">
               <span className="text-white text-xs font-bold">2</span>
             </div>
             <button
               type="button"
               onClick={handleSetup}
               disabled={loading}
-              className="flex-1 px-4 py-3 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center gap-2"
-              style={{ backgroundColor: '#60A5FA' }}
-              onMouseEnter={(e) => {
-                if (!loading) {
-                  e.currentTarget.style.backgroundColor = '#3b82f6';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!loading) {
-                  e.currentTarget.style.backgroundColor = '#60A5FA';
-                }
-              }}
+              className="flex-1 px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed font-bold flex items-center justify-center gap-2 shadow-md shadow-amber-500/20"
             >
-              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {loading && <Loader2 className="w-4 h-4 animate-spin text-white" />}
               {selectedMethod === 'TOTP' ? 'SET UP WITH AUTHENTICATOR APP' : 'SET UP WITH EMAIL OTP'}
             </button>
           </div>
 
           {/* Cancel Button - Step 3 */}
           <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500 flex items-center justify-center">
+            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-600 flex items-center justify-center">
               <span className="text-white text-xs font-bold">3</span>
             </div>
             <button
               type="button"
               onClick={onCancel}
               disabled={loading}
-              className="flex-1 px-4 py-3 bg-white border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="flex-1 px-4 py-3 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
               CANCEL
             </button>

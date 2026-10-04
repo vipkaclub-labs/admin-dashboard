@@ -1242,7 +1242,7 @@ const translations: Record<AllLanguages, Translations> = {
       },
     },
     header: {
-      providerPortal: 'KaKa Club',
+      providerPortal: 'VIPKA Club',
       operatorPortal: 'Operator Portal',
       adminPortal: 'Admin Portal',
       myProfile: 'My Profile',
@@ -1883,7 +1883,7 @@ const translations: Record<AllLanguages, Translations> = {
       },
     },
     header: {
-      providerPortal: 'KaKa Club',
+      providerPortal: 'VIPKA Club',
       operatorPortal: 'Operator Portal',
       adminPortal: 'Admin Portal',
       myProfile: 'Hồ sơ của tôi',

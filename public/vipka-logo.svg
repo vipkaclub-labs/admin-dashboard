@@ -1,0 +1,267 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="100%" height="100%">
+  <defs>
+    <!-- Outer Glow -->
+    <filter id="vip-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <!-- Drop Shadow for 3D Elements -->
+    <filter id="element-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.65" />
+    </filter>
+
+    <filter id="sparkle-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- 24K Gold Metallic Bevel Rim -->
+    <linearGradient id="gold-metal-rim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF8D6" />
+      <stop offset="20%" stop-color="#FCD34D" />
+      <stop offset="40%" stop-color="#B45309" />
+      <stop offset="55%" stop-color="#FFF1A8" />
+      <stop offset="75%" stop-color="#D97706" />
+      <stop offset="90%" stop-color="#78350F" />
+      <stop offset="100%" stop-color="#FDE68A" />
+    </linearGradient>
+
+    <!-- Rich Gold Medallion Base -->
+    <linearGradient id="gold-medallion-base" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24" />
+      <stop offset="35%" stop-color="#F59E0B" />
+      <stop offset="70%" stop-color="#D97706" />
+      <stop offset="100%" stop-color="#92400E" />
+    </linearGradient>
+
+    <!-- Luxury Dark Inner Shield -->
+    <linearGradient id="inner-shield-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1E1914" />
+      <stop offset="40%" stop-color="#14110E" />
+      <stop offset="100%" stop-color="#080706" />
+    </linearGradient>
+
+    <!-- Radial Gold Light Flare -->
+    <radialGradient id="gold-core-glow" cx="50%" cy="52%" r="48%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.45" />
+      <stop offset="50%" stop-color="#B45309" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Glass Gloss Highlight -->
+    <linearGradient id="glass-gloss" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.32" />
+      <stop offset="35%" stop-color="#FFFFFF" stop-opacity="0.08" />
+      <stop offset="60%" stop-color="#FFFFFF" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Crown 3D Gradient -->
+    <linearGradient id="crown-gold-3d" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFDF0" />
+      <stop offset="30%" stop-color="#FCD34D" />
+      <stop offset="70%" stop-color="#D97706" />
+      <stop offset="100%" stop-color="#78350F" />
+    </linearGradient>
+
+    <!-- Diamond Facet Gradients -->
+    <!-- Table (Top Center Flat Facet) -->
+    <linearGradient id="facet-table" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="50%" stop-color="#FEF08A" />
+      <stop offset="100%" stop-color="#FDE047" />
+    </linearGradient>
+
+    <!-- Top Left Facet -->
+    <linearGradient id="facet-top-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF9C3" />
+      <stop offset="100%" stop-color="#EAB308" />
+    </linearGradient>
+
+    <!-- Top Right Facet (Specular Flare) -->
+    <linearGradient id="facet-top-right" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="60%" stop-color="#FDE047" />
+      <stop offset="100%" stop-color="#CA8A04" />
+    </linearGradient>
+
+    <!-- Pavilion Center (Bottom Center V) -->
+    <linearGradient id="facet-pavilion-center" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FEF08A" />
+      <stop offset="50%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#B45309" />
+    </linearGradient>
+
+    <!-- Pavilion Left (Shadow & Depth) -->
+    <linearGradient id="facet-pavilion-left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#CA8A04" />
+      <stop offset="50%" stop-color="#854D0E" />
+      <stop offset="100%" stop-color="#451A03" />
+    </linearGradient>
+
+    <!-- Pavilion Right (Bright Refraction) -->
+    <linearGradient id="facet-pavilion-right" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FEF9C3" />
+      <stop offset="40%" stop-color="#FACC15" />
+      <stop offset="100%" stop-color="#A16207" />
+    </linearGradient>
+
+    <!-- Facet Outline Specular -->
+    <linearGradient id="facet-line-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="50%" stop-color="#FDE68A" />
+      <stop offset="100%" stop-color="#B45309" />
+    </linearGradient>
+  </defs>
+
+  <!-- Ambient Outer Glow -->
+  <rect x="22" y="22" width="196" height="196" rx="52" fill="#D97706" opacity="0.35" filter="url(#vip-glow)" />
+
+  <!-- Master Squircle Outer Bevel -->
+  <rect x="18" y="18" width="204" height="204" rx="54" fill="url(#gold-medallion-base)" stroke="url(#gold-metal-rim)" stroke-width="4.5" />
+
+  <!-- Inner Dark Luxury Inlay -->
+  <rect x="26" y="26" width="188" height="188" rx="46" fill="url(#inner-shield-grad)" stroke="url(#gold-metal-rim)" stroke-width="1.8" />
+
+  <!-- Inner Sunburst / Glow Core -->
+  <circle cx="120" cy="126" r="82" fill="url(#gold-core-glow)" />
+
+  <!-- Fine Inner Accent Gold Wire -->
+  <rect x="33" y="33" width="174" height="174" rx="40" fill="none" stroke="url(#gold-metal-rim)" stroke-width="1" stroke-dasharray="8 4" opacity="0.45" />
+
+  <!-- Glass Arc Shine (Gloss Finish) -->
+  <path d="M 28 68 C 28 42, 44 28, 72 28 L 168 28 C 196 28, 212 42, 212 68 C 170 82, 70 82, 28 68 Z" fill="url(#glass-gloss)" />
+
+  <!-- ============================================== -->
+  <!-- MAIN EMBLEM GROUP (SHADOWED)                   -->
+  <!-- ============================================== -->
+  <g filter="url(#element-shadow)">
+
+    <!-- ==================== CROWN ==================== -->
+    <g id="imperial-crown">
+      <!-- Crown Base Arch -->
+      <path d="M 82 77 Q 120 72 158 77 L 155 83 Q 120 78 85 83 Z" fill="url(#crown-gold-3d)" stroke="#FFFBEB" stroke-width="0.8" />
+
+      <!-- Jewels on Crown Base Band -->
+      <circle cx="94" cy="79.5" r="2.2" fill="#FFFFFF" stroke="#D97706" stroke-width="0.5" />
+      <circle cx="120" cy="78" r="2.8" fill="#EF4444" stroke="#FFFBEB" stroke-width="0.6" />
+      <circle cx="146" cy="79.5" r="2.2" fill="#FFFFFF" stroke="#D97706" stroke-width="0.5" />
+
+      <!-- Crown Body & 5 Imperial Peaks -->
+      <path d="M 83 76 
+               L 75 52 
+               L 95 62 
+               L 120 42 
+               L 145 62 
+               L 165 52 
+               L 157 76 
+               Q 120 71 83 76 Z" 
+            fill="url(#crown-gold-3d)" 
+            stroke="url(#facet-line-gold)" 
+            stroke-width="1.2" 
+            stroke-linejoin="round" />
+
+      <!-- Inner Crown Shading / Facets -->
+      <path d="M 120 44 L 105 74 Q 120 72 135 74 Z" fill="#FFEAA7" opacity="0.75" />
+      <path d="M 77 54 L 95 63 L 90 75 Z" fill="#B45309" opacity="0.5" />
+      <path d="M 163 54 L 145 63 L 150 75 Z" fill="#78350F" opacity="0.6" />
+
+      <!-- 5 Golden Crown Orbs / Pearls -->
+      <circle cx="75" cy="51" r="4.2" fill="url(#facet-table)" stroke="#78350F" stroke-width="0.8" />
+      <circle cx="95" cy="61" r="3.6" fill="url(#facet-table)" stroke="#78350F" stroke-width="0.8" />
+      <!-- Center Imperial Orb (Larger with Cross/Spire Glow) -->
+      <circle cx="120" cy="40.5" r="5.5" fill="#FFFFFF" stroke="#B45309" stroke-width="1" />
+      <circle cx="120" cy="40.5" r="3" fill="#FDE047" />
+      <circle cx="145" cy="61" r="3.6" fill="url(#facet-table)" stroke="#78350F" stroke-width="0.8" />
+      <circle cx="165" cy="51" r="4.2" fill="url(#facet-table)" stroke="#78350F" stroke-width="0.8" />
+    </g>
+
+    <!-- ==================== DIAMOND ==================== -->
+    <g id="royal-diamond" transform="translate(0, 4)">
+      <!-- 1. Top Crown Facets -->
+      <!-- Table Facet (Flat Top Center) -->
+      <polygon points="90,92 150,92 134,115 106,115" 
+               fill="url(#facet-table)" 
+               stroke="url(#facet-line-gold)" 
+               stroke-width="1.2" 
+               stroke-linejoin="round" />
+
+      <!-- Top Left Kite -->
+      <polygon points="90,92 106,115 58,115" 
+               fill="url(#facet-top-left)" 
+               stroke="url(#facet-line-gold)" 
+               stroke-width="1.2" 
+               stroke-linejoin="round" />
+
+      <!-- Top Right Kite -->
+      <polygon points="150,92 182,115 134,115" 
+               fill="url(#facet-top-right)" 
+               stroke="url(#facet-line-gold)" 
+               stroke-width="1.2" 
+               stroke-linejoin="round" />
+
+      <!-- Top Outer Corner Left -->
+      <polygon points="90,92 58,115 54,115" 
+               fill="#F59E0B" 
+               opacity="0.8" />
+
+      <!-- 2. Lower Pavilion Facets (Converging to Bottom Point 120, 182) -->
+      <!-- Pavilion Left (Deep Luxury Shadow) -->
+      <polygon points="58,115 106,115 120,182" 
+               fill="url(#facet-pavilion-left)" 
+               stroke="url(#facet-line-gold)" 
+               stroke-width="1.2" 
+               stroke-linejoin="round" />
+
+      <!-- Pavilion Center (Reflective Gold) -->
+      <polygon points="106,115 134,115 120,182" 
+               fill="url(#facet-pavilion-center)" 
+               stroke="url(#facet-line-gold)" 
+               stroke-width="1.2" 
+               stroke-linejoin="round" />
+
+      <!-- Pavilion Right (Bright Specular Gold) -->
+      <polygon points="134,115 182,115 120,182" 
+               fill="url(#facet-pavilion-right)" 
+               stroke="url(#facet-line-gold)" 
+               stroke-width="1.2" 
+               stroke-linejoin="round" />
+
+      <!-- Extra Cut Geometry Lines for True Gem Precision -->
+      <line x1="120" y1="115" x2="120" y2="182" stroke="#FFFBEB" stroke-width="1" opacity="0.6" />
+      <line x1="106" y1="115" x2="120" y2="92" stroke="#FFFFFF" stroke-width="0.8" opacity="0.7" />
+      <line x1="134" y1="115" x2="120" y2="92" stroke="#FFFFFF" stroke-width="0.8" opacity="0.7" />
+    </g>
+
+  </g>
+
+  <!-- ============================================== -->
+  <!-- LUXURY SPARKLES & LENS FLARES                  -->
+  <!-- ============================================== -->
+  <!-- Top Right Diamond Sparkle (Big) -->
+  <g transform="translate(182, 118)" filter="url(#sparkle-glow)">
+    <path d="M 0,-14 Q 0,0 14,0 Q 0,0 0,14 Q 0,0 -14,0 Q 0,0 0,-14 Z" fill="#FFFFFF" />
+    <path d="M 0,-7 Q 0,0 7,0 Q 0,0 0,7 Q 0,0 -7,0 Q 0,0 0,-7 Z" fill="#FEF08A" />
+    <circle cx="0" cy="0" r="2.5" fill="#FFFFFF" />
+  </g>
+
+  <!-- Crown Peak Sparkle (Small) -->
+  <g transform="translate(120, 39)" filter="url(#sparkle-glow)">
+    <path d="M 0,-10 Q 0,0 10,0 Q 0,0 0,10 Q 0,0 -10,0 Q 0,0 0,-10 Z" fill="#FFFFFF" opacity="0.9" />
+    <circle cx="0" cy="0" r="1.8" fill="#FFFFFF" />
+  </g>
+
+  <!-- Table Edge Sparkle (Mini Glint) -->
+  <g transform="translate(88, 96)" filter="url(#sparkle-glow)">
+    <path d="M 0,-6 Q 0,0 6,0 Q 0,0 0,6 Q 0,0 -6,0 Q 0,0 0,-6 Z" fill="#FFFFFF" opacity="0.85" />
+  </g>
+
+  <!-- Bottom Culet Glint -->
+  <g transform="translate(120, 186)" filter="url(#sparkle-glow)">
+    <circle cx="0" cy="0" r="2.2" fill="#FFFFFF" />
+    <circle cx="0" cy="0" r="4.5" fill="#FDE047" opacity="0.5" />
+  </g>
+</svg>
