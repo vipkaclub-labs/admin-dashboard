@@ -137,6 +137,8 @@ export const Transactions = () => {
   // Adjustment Modal state
   const [usersList, setUsersList] = useState<UserResponseDto[]>([]);
   const [loadingUsers, setLoadingUsers] = useState<boolean>(false);
+  const [userSearchQuery, setUserSearchQuery] = useState<string>('');
+  const [inputMode, setInputMode] = useState<'select' | 'manual'>('select');
   const [adjustTargetUserId, setAdjustTargetUserId] = useState<string>('');
   const [adjustType, setAdjustType] = useState<'CREDIT' | 'DEBIT'>('CREDIT');
   const [adjustAmount, setAdjustAmount] = useState<number>(1000000);
@@ -202,13 +204,17 @@ export const Transactions = () => {
     fetchTransactions();
   }, [fetchTransactions]);
 
-  // Load user list for manual adjustment modal
-  const loadUsersForModal = async () => {
+  // Load user list for manual adjustment modal with dynamic search
+  const loadUsersForModal = useCallback(async (search = '') => {
     setLoadingUsers(true);
     try {
-      const res = await userService.getUsers({ page: 1, page_size: 50 });
+      const res = await userService.getUsers({
+        page: 1,
+        page_size: 50,
+        search: search.trim() || undefined,
+      });
       const users = res?.data || (res as any)?.users || [];
-      if (Array.isArray(users) && users.length > 0) {
+      if (Array.isArray(users)) {
         setUsersList(users);
       }
     } catch {
@@ -216,12 +222,28 @@ export const Transactions = () => {
     } finally {
       setLoadingUsers(false);
     }
-  };
+  }, []);
 
   const handleOpenAdjustModal = () => {
     setIsAdjustModalOpen(true);
-    loadUsersForModal();
+    setUserSearchQuery('');
+    loadUsersForModal('');
   };
+
+  const handleOpenAdjustModalForUser = (userId: string) => {
+    setAdjustTargetUserId(userId);
+    setInputMode('manual');
+    setIsAdjustModalOpen(true);
+  };
+
+  // Debounced user search inside modal
+  useEffect(() => {
+    if (!isAdjustModalOpen || inputMode !== 'select') return;
+    const timer = setTimeout(() => {
+      loadUsersForModal(userSearchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [userSearchQuery, isAdjustModalOpen, inputMode, loadUsersForModal]);
 
   // Fetch balance for selected user in modal
   useEffect(() => {
@@ -953,17 +975,30 @@ export const Transactions = () => {
 
                       {/* Actions */}
                       <td className="px-5 py-4 whitespace-nowrap text-right">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedTxn(txn);
-                            setIsDetailModalOpen(true);
-                          }}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-stone-700 bg-stone-100 hover:bg-amber-100/70 hover:text-amber-900 transition"
-                        >
-                          <Eye className="w-3.5 h-3.5 text-stone-500" />
-                          <span>Chi tiết</span>
-                        </button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenAdjustModalForUser(txn.userId);
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 transition"
+                            title="Điều chỉnh số dư ví thành viên"
+                          >
+                            <Wallet className="w-3.5 h-3.5 text-amber-700" />
+                            <span className="hidden xl:inline">Sổ cái</span>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedTxn(txn);
+                              setIsDetailModalOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-stone-700 bg-stone-100 hover:bg-amber-100/70 hover:text-amber-900 transition"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-stone-500" />
+                            <span>Chi tiết</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -1116,14 +1151,27 @@ export const Transactions = () => {
             </div>
 
             {/* Modal Actions */}
-            <div className="p-5 bg-stone-50/80 border-t border-stone-200 flex items-center justify-between gap-3">
-              <button
-                onClick={() => handleCopy(selectedTxn.id)}
-                className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-stone-700 bg-white border border-stone-300 hover:bg-stone-50 rounded-xl transition"
-              >
-                <Copy className="w-3.5 h-3.5" />
-                <span>Sao chép mã GD</span>
-              </button>
+            <div className="p-5 bg-stone-50/80 border-t border-stone-200 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleCopy(selectedTxn.id)}
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-stone-700 bg-white border border-stone-300 hover:bg-stone-50 rounded-xl transition shadow-2xs"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Sao chép mã GD</span>
+                </button>
+                <button
+                  onClick={() => {
+                    const uid = selectedTxn.userId;
+                    setIsDetailModalOpen(false);
+                    handleOpenAdjustModalForUser(uid);
+                  }}
+                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-xl transition shadow-2xs"
+                >
+                  <Wallet className="w-3.5 h-3.5 text-amber-700" />
+                  <span>Điều chỉnh ví thành viên</span>
+                </button>
+              </div>
               <button
                 onClick={() => setIsDetailModalOpen(false)}
                 className="px-5 py-2 text-xs font-bold text-white bg-stone-900 hover:bg-stone-800 rounded-xl transition shadow-sm"
@@ -1167,47 +1215,119 @@ export const Transactions = () => {
             <form onSubmit={handleExecuteAdjustment} className="p-6 space-y-4">
               {/* Select or Enter User ID */}
               <div>
-                <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                  Thành viên VIP nhận điều chỉnh *
-                </label>
-                {usersList.length > 0 ? (
-                  <select
-                    value={adjustTargetUserId}
-                    onChange={(e) => setAdjustTargetUserId(e.target.value)}
-                    className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm bg-stone-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 text-stone-800 font-medium"
-                    required
-                  >
-                    <option value="">-- Chọn thành viên từ danh sách --</option>
-                    {usersList.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name || (u as any).username || 'Khách'} - {u.email} ({u.id.substring(0, 8)}...)
-                      </option>
-                    ))}
-                  </select>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+                    Thành viên VIP nhận điều chỉnh *
+                  </label>
+                  <div className="flex items-center gap-1 bg-stone-100 p-0.5 rounded-lg text-[11px] font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => setInputMode('select')}
+                      className={`px-2 py-0.5 rounded-md transition ${
+                        inputMode === 'select'
+                          ? 'bg-white text-stone-900 shadow-xs font-bold'
+                          : 'text-stone-500 hover:text-stone-800'
+                      }`}
+                    >
+                      Chọn từ danh sách
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setInputMode('manual')}
+                      className={`px-2 py-0.5 rounded-md transition ${
+                        inputMode === 'manual'
+                          ? 'bg-white text-stone-900 shadow-xs font-bold'
+                          : 'text-stone-500 hover:text-stone-800'
+                      }`}
+                    >
+                      Nhập mã UUID
+                    </button>
+                  </div>
+                </div>
+
+                {inputMode === 'select' ? (
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                      <input
+                        type="text"
+                        value={userSearchQuery}
+                        onChange={(e) => setUserSearchQuery(e.target.value)}
+                        placeholder="Tìm theo tên, email, username..."
+                        className="w-full pl-8 pr-7 py-2 text-xs rounded-xl border border-stone-200 bg-stone-50/60 focus:bg-white text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500"
+                      />
+                      {loadingUsers && (
+                        <Loader2 className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-amber-600 animate-spin" />
+                      )}
+                    </div>
+
+                    <select
+                      value={adjustTargetUserId}
+                      onChange={(e) => setAdjustTargetUserId(e.target.value)}
+                      className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-xs sm:text-sm bg-stone-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 text-stone-800 font-medium"
+                      required
+                    >
+                      <option value="">-- Chọn thành viên ({usersList.length} người) --</option>
+                      {usersList.map((u) => (
+                        <option key={u.id} value={u.id}>
+                          {u.name || (u as any).username || 'Khách'} - {u.email} ({u.id.substring(0, 8)}...)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 ) : (
                   <input
                     type="text"
                     value={adjustTargetUserId}
                     onChange={(e) => setAdjustTargetUserId(e.target.value)}
-                    placeholder="Nhập User UUID (ví dụ: usr-vip-001)"
+                    placeholder="Nhập User UUID (ví dụ: 4f4bcf82-748c-4c8e-9584-dabaeec503cc)"
                     className="w-full border border-stone-200 rounded-xl px-3 py-2.5 text-sm bg-stone-50/60 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/25 focus:border-amber-500 text-stone-800 font-mono"
                     required
                   />
                 )}
 
-                {/* Live balance indicator */}
+                {/* Live balance & projected balance indicator */}
                 {adjustTargetUserId && (
-                  <div className="mt-2 p-2.5 bg-amber-50/60 border border-amber-200/60 rounded-xl flex items-center justify-between text-xs">
-                    <span className="text-stone-600 font-medium">Số dư ví hiện tại:</span>
-                    <span className="font-extrabold text-amber-900 font-mono">
-                      {checkingBalance ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600 inline" />
-                      ) : userLiveBalance !== null ? (
-                        `${userLiveBalance.toLocaleString('vi-VN')} VNĐ`
-                      ) : (
-                        'Đang cập nhật'
-                      )}
-                    </span>
+                  <div className="mt-2 p-3 bg-amber-50/70 border border-amber-200/80 rounded-xl space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-stone-600 font-medium">Số dư ví hiện tại:</span>
+                      <span className="font-extrabold text-amber-900 font-mono">
+                        {checkingBalance ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-600 inline" />
+                        ) : userLiveBalance !== null ? (
+                          `${userLiveBalance.toLocaleString('vi-VN')} VNĐ`
+                        ) : (
+                          'Đang tải...'
+                        )}
+                      </span>
+                    </div>
+
+                    {userLiveBalance !== null && adjustAmount > 0 && (
+                      <div className="flex items-center justify-between pt-1 border-t border-amber-200/50">
+                        <span className="text-stone-600 font-medium">Dự kiến sau điều chỉnh:</span>
+                        <span
+                          className={`font-black font-mono ${
+                            adjustType === 'CREDIT'
+                              ? 'text-emerald-700'
+                              : userLiveBalance - adjustAmount < 0
+                              ? 'text-rose-600'
+                              : 'text-stone-900'
+                          }`}
+                        >
+                          {(adjustType === 'CREDIT'
+                            ? userLiveBalance + adjustAmount
+                            : userLiveBalance - adjustAmount
+                          ).toLocaleString('vi-VN')}{' '}
+                          VNĐ
+                        </span>
+                      </div>
+                    )}
+
+                    {adjustType === 'DEBIT' && userLiveBalance !== null && userLiveBalance - adjustAmount < 0 && (
+                      <div className="text-[11px] font-bold text-rose-600 pt-0.5">
+                        ⚠️ Cảnh báo: Số tiền trừ vượt quá số dư hiện có trong ví thành viên.
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
