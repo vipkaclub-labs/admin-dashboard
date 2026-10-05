@@ -21,7 +21,7 @@ class CommentServiceImpl implements CommentService {
   async createComment(data: CreateCommentRequestDto): Promise<CommentResponseDto> {
     try {
       const response = await apiClient.post<CommentResponseDto>(
-        API_ENDPOINTS.COMMENTS.BASE,
+        API_ENDPOINTS.COMMENTS.CREATE,
         data
       );
       return response.data;

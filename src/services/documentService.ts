@@ -48,12 +48,7 @@ class DocumentServiceImpl implements DocumentService {
 
       const response = await apiClient.post<DocumentResponseDto>(
         API_ENDPOINTS.DOCUMENTS.BASE,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
+        formData
       );
       return response.data;
     } catch (error) {

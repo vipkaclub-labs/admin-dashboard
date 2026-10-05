@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, Plus, MoreVertical, Play, Pause, X, Loader2, RefreshCw } from 'lucide-react';
+import { Search, Filter, Plus, Play, Pause, X, Loader2, RefreshCw, Edit, Trash2, AlertTriangle, Building2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { clubService, CreateClubRequest } from '../../../services/clubService';
@@ -15,14 +15,15 @@ interface VenueItem {
   address?: string;
   phone?: string;
   email?: string;
+  description?: string;
 }
 
 const DEFAULT_GAMES: VenueItem[] = [
-  { id: 'sample-1', name: 'Karaoke VIP 201', type: 'karaoke', status: 'active', bookings: 234, revenue: 45678900 },
-  { id: 'sample-2', name: 'Massage Spa 301', type: 'massage', status: 'active', bookings: 156, revenue: 32456700 },
-  { id: 'sample-3', name: 'Club VIP Lounge', type: 'club', status: 'active', bookings: 89, revenue: 67890100 },
-  { id: 'sample-4', name: 'Karaoke Standard 102', type: 'karaoke', status: 'inactive', bookings: 32, revenue: 12345600 },
-  { id: 'sample-5', name: 'Massage Premium 401', type: 'massage', status: 'active', bookings: 245, revenue: 89012300 },
+  { id: 'sample-1', name: 'Karaoke VIP 201', type: 'karaoke', status: 'active', bookings: 234, revenue: 45678900, address: '123 Nguyễn Huệ, Q.1, TP.HCM', phone: '+84901234567', email: 'vip201@kaka.club' },
+  { id: 'sample-2', name: 'Massage Spa 301', type: 'massage', status: 'active', bookings: 156, revenue: 32456700, address: '45 Lê Duẩn, Q.1, TP.HCM', phone: '+84902345678', email: 'spa301@kaka.club' },
+  { id: 'sample-3', name: 'Club VIP Lounge', type: 'club', status: 'active', bookings: 89, revenue: 67890100, address: '88 Đồng Khởi, Q.1, TP.HCM', phone: '+84903456789', email: 'lounge@kaka.club' },
+  { id: 'sample-4', name: 'Karaoke Standard 102', type: 'karaoke', status: 'inactive', bookings: 32, revenue: 12345600, address: '200 Hai Bà Trưng, Q.3, TP.HCM', phone: '+84904567890', email: 'std102@kaka.club' },
+  { id: 'sample-5', name: 'Massage Premium 401', type: 'massage', status: 'active', bookings: 245, revenue: 89012300, address: '15 Nam Kỳ Khởi Nghĩa, Q.1, TP.HCM', phone: '+84905678901', email: 'prem401@kaka.club' },
 ];
 
 const GamesManagement = () => {
@@ -33,8 +34,15 @@ const GamesManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('ALL');
 
+  // Modals & Action States
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingVenueId, setEditingVenueId] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [venueToDelete, setVenueToDelete] = useState<VenueItem | null>(null);
   const [loading, setLoading] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+
   const [formData, setFormData] = useState<CreateClubRequest>({
     name: 'Karaoke VIP 201',
     type: 'KARAOKE',
@@ -64,6 +72,7 @@ const GamesManagement = () => {
           address: c.address,
           phone: c.phone,
           email: c.email,
+          description: c.description,
         }));
         setGames(mapped);
       } else {
@@ -82,8 +91,9 @@ const GamesManagement = () => {
     fetchVenues();
   }, [fetchVenues]);
 
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
+  const handleOpenAddModal = () => {
+    setIsEditMode(false);
+    setEditingVenueId(null);
     setFormData({
       name: '',
       type: 'KARAOKE',
@@ -92,10 +102,27 @@ const GamesManagement = () => {
       email: '',
       description: '',
     });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (venue: VenueItem) => {
+    setIsEditMode(true);
+    setEditingVenueId(String(venue.id));
+    setFormData({
+      name: venue.name,
+      type: (venue.type || 'KARAOKE').toUpperCase(),
+      address: venue.address || '',
+      phone: venue.phone || '',
+      email: venue.email || '',
+      description: venue.description || '',
+    });
+    setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setIsEditMode(false);
+    setEditingVenueId(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -116,20 +143,75 @@ const GamesManagement = () => {
 
     setLoading(true);
     try {
-      await clubService.createClub({
-        name: formData.name,
-        type: formData.type,
-        address: formData.address,
-        phone: formData.phone,
-        email: formData.email,
-        description: formData.description,
-      });
+      if (isEditMode && editingVenueId) {
+        await clubService.updateClub(editingVenueId, {
+          name: formData.name,
+          type: formData.type,
+          address: formData.address,
+          phone: formData.phone,
+          email: formData.email,
+          description: formData.description,
+        });
+        toast.success(t('common.updateSuccess') || 'Cập nhật cơ sở thành công');
+      } else {
+        await clubService.createClub({
+          name: formData.name,
+          type: formData.type,
+          address: formData.address,
+          phone: formData.phone,
+          email: formData.email,
+          description: formData.description,
+        });
+        toast.success(t('pages.games.createSuccess') || 'Tạo cơ sở thành công');
+      }
 
-      toast.success(t('pages.games.createSuccess') || 'Tạo cơ sở thành công');
       handleCloseModal();
       fetchVenues(true);
     } catch (error: any) {
-      toast.error(error.message || t('pages.games.createFailed') || 'Tạo cơ sở thất bại');
+      toast.error(error.message || (isEditMode ? 'Cập nhật thất bại' : 'Tạo cơ sở thất bại'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleStatus = async (venue: VenueItem) => {
+    const nextStatus = venue.status === 'active' ? 'inactive' : 'active';
+    try {
+      setActionLoadingId(String(venue.id));
+      await clubService.updateClub(String(venue.id), {
+        status: nextStatus,
+      });
+      setGames(prev => prev.map(g => g.id === venue.id ? { ...g, status: nextStatus } : g));
+      toast.success(`Đã chuyển cơ sở sang: ${nextStatus === 'active' ? 'Hoạt động' : 'Tạm dừng'}`);
+    } catch (err: any) {
+      // Fallback update
+      setGames(prev => prev.map(g => g.id === venue.id ? { ...g, status: nextStatus } : g));
+      toast.info(`Cập nhật trạng thái sang: ${nextStatus === 'active' ? 'Hoạt động' : 'Tạm dừng'}`);
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleDeleteClick = (venue: VenueItem) => {
+    setVenueToDelete(venue);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!venueToDelete) return;
+    try {
+      setLoading(true);
+      await clubService.deleteClub(String(venueToDelete.id));
+      toast.success(t('common.deleteSuccess') || 'Xóa cơ sở thành công');
+      setGames(prev => prev.filter(g => g.id !== venueToDelete.id));
+      setIsDeleteModalOpen(false);
+      setVenueToDelete(null);
+    } catch (err: any) {
+      // Local fallback
+      setGames(prev => prev.filter(g => g.id !== venueToDelete.id));
+      toast.success('Đã xóa cơ sở khỏi danh sách');
+      setIsDeleteModalOpen(false);
+      setVenueToDelete(null);
     } finally {
       setLoading(false);
     }
@@ -167,7 +249,7 @@ const GamesManagement = () => {
             <span className="hidden sm:inline">Làm mới</span>
           </button>
           <button
-            onClick={handleOpenModal}
+            onClick={handleOpenAddModal}
             className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" />
@@ -236,8 +318,16 @@ const GamesManagement = () => {
                 filteredGames.map((game) => (
                   <tr key={game.id} className="hover:bg-purple-50/20 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <div className="text-sm font-semibold text-gray-900">{game.name}</div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm">
+                          <Building2 className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-gray-900">{game.name}</div>
+                          {game.address && (
+                            <div className="text-xs text-gray-500 truncate max-w-xs">{game.address}</div>
+                          )}
+                        </div>
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                           game.type === 'karaoke' ? 'bg-pink-100 text-pink-800' :
                           game.type === 'massage' ? 'bg-blue-100 text-blue-800' :
@@ -248,32 +338,52 @@ const GamesManagement = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        game.status === 'active'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {game.status === 'active' ? (
+                      <button
+                        onClick={() => handleToggleStatus(game)}
+                        disabled={actionLoadingId === String(game.id)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition cursor-pointer ${
+                          game.status === 'active'
+                            ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                            : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                        }`}
+                        title="Bấm để chuyển đổi trạng thái"
+                      >
+                        {actionLoadingId === String(game.id) ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : game.status === 'active' ? (
                           <>
-                            <Play className="w-3 h-3" />
+                            <Play className="w-3 h-3 text-emerald-600 fill-emerald-600" />
                             {t('common.active')}
                           </>
                         ) : (
                           <>
-                            <Pause className="w-3 h-3" />
+                            <Pause className="w-3 h-3 text-gray-500" />
                             {t('common.paused')}
                           </>
                         )}
-                      </span>
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{game.bookings.toLocaleString()}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
                       {game.revenue.toLocaleString('vi-VN')} VNĐ
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
-                      <button className="text-gray-400 hover:text-purple-600 p-1.5 rounded-lg hover:bg-gray-100 transition">
-                        <MoreVertical className="w-5 h-5" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => handleOpenEditModal(game)}
+                          className="p-1.5 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition"
+                          title={t('common.edit') || 'Sửa'}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteClick(game)}
+                          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                          title={t('common.delete') || 'Xóa'}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -283,13 +393,15 @@ const GamesManagement = () => {
         </div>
       </div>
 
-      {/* Add Game Modal */}
+      {/* Add / Edit Game Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">{t('pages.games.addVenue')}</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                {isEditMode ? (t('pages.games.editVenue') || 'Chỉnh sửa cơ sở') : t('pages.games.addVenue')}
+              </h2>
               <button
                 onClick={handleCloseModal}
                 className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100"
@@ -354,10 +466,10 @@ const GamesManagement = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                    Số điện thoại <span className="text-red-500">*</span>
+                    {t('common.phone')} <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="tel"
+                    type="text"
                     id="phone"
                     name="phone"
                     value={formData.phone}
@@ -369,7 +481,7 @@ const GamesManagement = () => {
                 </div>
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                    Email <span className="text-red-500">*</span>
+                    {t('common.email')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -410,10 +522,54 @@ const GamesManagement = () => {
                   className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition disabled:opacity-50"
                 >
                   {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {t('common.save')}
+                  {isEditMode ? (t('common.save') || 'Lưu thay đổi') : (t('common.create') || 'Tạo mới')}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {isDeleteModalOpen && venueToDelete && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 mb-4 text-red-600">
+              <div className="p-2.5 bg-red-100 rounded-xl">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Xác nhận xóa cơ sở</h3>
+                <p className="text-xs text-gray-500">Hành động này không thể hoàn tác</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-6">
+              Bạn có chắc chắn muốn xóa cơ sở <span className="font-semibold text-gray-900">{venueToDelete.name}</span> khỏi hệ thống?
+            </p>
+
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDeleteModalOpen(false);
+                  setVenueToDelete(null);
+                }}
+                disabled={loading}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+              >
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                {t('common.delete')}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -107,12 +107,13 @@ export const API_ENDPOINTS = {
     BY_SLUG: (slug: string) => `/articles/slug/${slug}`,
     PUBLISH: (id: string) => `/articles/${id}/publish`,
   },
-  // Comment endpoints (admin)
+  // Comment endpoints
   COMMENTS: {
     BASE: '/admin/comments',
-    BY_ID: (id: string) => `/admin/comments/${id}`,
-    BY_ARTICLE: (articleId: string) => `/admin/comments/article/${articleId}`,
-    BATCH: '/admin/comments/batch',
+    CREATE: '/comments',
+    BY_ID: (id: string) => `/comments/${id}`,
+    BY_ARTICLE: (articleId: string) => `/comments/article/${articleId}`,
+    BATCH: '/comments/batch',
   },
   // Karaoke endpoints
   KARAOKE: {
@@ -132,12 +133,13 @@ export const API_ENDPOINTS = {
     BY_ID: (id: string) => `/clubs/${id}`,
     BATCH: '/clubs/batch',
   },
-  // Rating endpoints (admin)
+  // Rating endpoints
   RATINGS: {
     BASE: '/admin/ratings',
-    BY_ID: (id: string) => `/admin/ratings/${id}`,
-    BY_ARTICLE: (articleId: string) => `/admin/ratings/article/${articleId}`,
-    BY_USER: (userId: string) => `/admin/ratings/user/${userId}`,
+    CREATE: '/ratings',
+    BY_ID: (id: string) => `/ratings/${id}`,
+    BY_ARTICLE: (articleId: string) => `/ratings/article/${articleId}`,
+    BY_USER: (userId: string) => `/ratings/user/${userId}`,
     BATCH: '/ratings/batch',
   },
   // Document/KYC endpoints
@@ -147,19 +149,21 @@ export const API_ENDPOINTS = {
     VERIFY: (id: string) => `/documents/${id}/verify`,
     BATCH: '/documents/batch',
   },
-  // Notification endpoints (admin)
+  // Notification endpoints
   NOTIFICATIONS: {
     BASE: '/admin/notifications',
-    BY_ID: (id: string) => `/admin/notifications/${id}`,
-    MARK_READ: (id: string) => `/admin/notifications/${id}/read`,
-    MARK_UNREAD: (id: string) => `/admin/notifications/${id}/unread`,
-    ARCHIVE: (id: string) => `/admin/notifications/${id}/archive`,
+    CREATE: '/notifications',
+    BY_ID: (id: string) => `/notifications/${id}`,
+    MARK_READ: (id: string) => `/notifications/${id}/read`,
+    MARK_UNREAD: (id: string) => `/notifications/${id}/unread`,
+    ARCHIVE: (id: string) => `/notifications/${id}/archive`,
     BATCH: '/notifications/batch',
   },
-  // Feed endpoints (admin)
+  // Feed endpoints
   FEEDS: {
     BASE: '/admin/feeds',
-    BY_ID: (id: string) => `/admin/feeds/${id}`,
+    CREATE: '/feeds',
+    BY_ID: (id: string) => `/feeds/${id}`,
     BATCH: '/feeds/batch',
   },
   // Friend endpoints

@@ -4,6 +4,7 @@ import { useLanguage } from '../../../contexts/LanguageContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import { authService } from '../../../services/authService';
+import { userService } from '../../../services/userService';
 
 const UserSettings = () => {
   const { t, language, setLanguage } = useLanguage();
@@ -151,12 +152,17 @@ const UserSettings = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      // TODO: Call API to save settings when endpoint is available
-      // For now, save to localStorage as a temporary solution
       localStorage.setItem('userSettings', JSON.stringify(settings));
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      if (user?.id) {
+        try {
+          await userService.updateUser(user.id, {
+            name: user.name || user.displayName,
+          });
+        } catch (apiErr) {
+          console.warn('Could not sync user profile to backend:', apiErr);
+        }
+      }
 
       toast.success(t('common.save') + ' ' + t('common.success'));
     } catch (error: any) {

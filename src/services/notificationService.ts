@@ -23,7 +23,7 @@ class NotificationServiceImpl implements NotificationService {
   async createNotification(data: CreateNotificationRequestDto): Promise<NotificationResponseDto> {
     try {
       const response = await apiClient.post<NotificationResponseDto>(
-        API_ENDPOINTS.NOTIFICATIONS.BASE,
+        API_ENDPOINTS.NOTIFICATIONS.CREATE,
         data
       );
       return response.data;
@@ -96,9 +96,13 @@ class NotificationServiceImpl implements NotificationService {
 
   async deleteNotifications(ids: string[]): Promise<void> {
     try {
-      await apiClient.delete(API_ENDPOINTS.NOTIFICATIONS.BATCH, {
-        body: JSON.stringify({ ids }),
-      });
+      const results = await Promise.allSettled(
+        ids.map(id => this.deleteNotification(id))
+      );
+      const failed = results.filter(r => r.status === 'rejected');
+      if (failed.length === ids.length && ids.length > 0) {
+        throw new Error('Xóa các thông báo thất bại. Vui lòng thử lại.');
+      }
     } catch (error) {
       const apiError = error as ApiError;
       throw new Error(

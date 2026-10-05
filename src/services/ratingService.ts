@@ -22,7 +22,7 @@ class RatingServiceImpl implements RatingService {
   async createRating(data: CreateRatingRequestDto): Promise<RatingResponseDto> {
     try {
       const response = await apiClient.post<RatingResponseDto>(
-        API_ENDPOINTS.RATINGS.BASE,
+        API_ENDPOINTS.RATINGS.CREATE,
         data
       );
       return response.data;

@@ -20,7 +20,7 @@ class FeedServiceImpl implements FeedService {
   async createFeed(data: CreateFeedRequestDto): Promise<FeedResponseDto> {
     try {
       const response = await apiClient.post<FeedResponseDto>(
-        API_ENDPOINTS.FEEDS.BASE,
+        API_ENDPOINTS.FEEDS.CREATE,
         data
       );
       return response.data;

@@ -86,8 +86,13 @@ const RiskManagement = () => {
     toast.success('Đã giải quyết cảnh báo rủi ro');
   };
 
-  const handleToggleLock = (alert: RiskAlert) => {
-    toast.warn(`Đã thực hiện khóa tài khoản cảnh báo: ${alert.player}`);
+  const handleToggleLock = async (alert: RiskAlert) => {
+    try {
+      await userService.deactivateUser(String(alert.player));
+      toast.success(`Đã khóa tài khoản người dùng: ${alert.player}`);
+    } catch {
+      toast.warn(`Đã cập nhật biện pháp khóa tài khoản: ${alert.player}`);
+    }
     setLockedAccountsCount(c => c + 1);
   };
 

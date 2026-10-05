@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Maximize2, Mail, Bell, Power, X, Globe, List, User, Settings, HelpCircle, Loader2 } from 'lucide-react';
+import { Search, Maximize2, Mail, Bell, Power, X, Globe, List, User, Settings, HelpCircle, Loader2, MessageSquare, CheckCheck } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getSupportedLanguages, getLanguageName } from '../utils/translations';
+import { notificationService } from '../services/notificationService';
+import { chatService } from '../services/chatService';
+import { NotificationResponseDto, ChatRoomResponseDto } from '../types/api';
 
 interface HeaderProps {
   onToggleSidebar?: () => void;
@@ -19,6 +22,85 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Live Notifications State
+  const [notifications, setNotifications] = useState<NotificationResponseDto[]>([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+
+  // Live Messages / Chat State
+  const [chatRooms, setChatRooms] = useState<ChatRoomResponseDto[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      setLoadingNotifications(true);
+      const res = await notificationService.getNotifications(1, 5);
+      const items = res?.data?.items || (res as any)?.items || [];
+      setNotifications(items);
+      setUnreadNotificationCount(items.filter((n: any) => n.status === 'UNREAD').length);
+    } catch (err) {
+      console.warn('Could not fetch notifications for header:', err);
+    } finally {
+      setLoadingNotifications(false);
+    }
+  }, []);
+
+  const fetchChatRooms = useCallback(async () => {
+    try {
+      setLoadingMessages(true);
+      const res = await chatService.getChatRooms({ page: 1, limit: 5 });
+      const items = (res as any)?.data?.items || (res as any)?.items || (res as any)?.data || [];
+      if (Array.isArray(items)) {
+        setChatRooms(items);
+      }
+    } catch (err) {
+      console.warn('Could not fetch chat rooms for header:', err);
+    } finally {
+      setLoadingMessages(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    fetchChatRooms();
+  }, [fetchNotifications, fetchChatRooms]);
+
+  const handleNotificationClick = async (notif: NotificationResponseDto) => {
+    if (notif.status === 'UNREAD') {
+      try {
+        await notificationService.markAsRead(notif.id);
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notif.id ? { ...n, status: 'READ' as any } : n))
+        );
+        setUnreadNotificationCount((prev) => Math.max(0, prev - 1));
+      } catch {
+        // Optimistic update even on network glitch
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notif.id ? { ...n, status: 'READ' as any } : n))
+        );
+        setUnreadNotificationCount((prev) => Math.max(0, prev - 1));
+      }
+    }
+    setIsNotificationsOpen(false);
+    router.push('/dashboard/notifications');
+  };
+
+  const formatRelativeTime = (dateStr?: string) => {
+    if (!dateStr) return '';
+    try {
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const minutes = Math.floor(diff / 60000);
+      if (minutes < 1) return 'Vừa xong';
+      if (minutes < 60) return `${minutes}m trước`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h trước`;
+      const days = Math.floor(hours / 24);
+      return `${days}d trước`;
+    } catch {
+      return dateStr;
+    }
+  };
 
   const handleLogout = async () => {
     // Close profile menu before logout
@@ -248,7 +330,9 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
             title={t('common.messages')}
           >
             <Mail className="w-5 h-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full ring-2 ring-white"></span>
+            {chatRooms.length > 0 && (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full ring-2 ring-white"></span>
+            )}
           </button>
 
           {/* Messages Dropdown */}
@@ -263,6 +347,11 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-amber-500"></span>
                     <h3 className="font-semibold text-stone-900 text-sm">{t('common.messages')}</h3>
+                    {chatRooms.length > 0 && (
+                      <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded-full">
+                        {chatRooms.length}
+                      </span>
+                    )}
                   </div>
                   <button
                     onClick={() => setIsMessagesOpen(false)}
@@ -272,52 +361,55 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                   </button>
                 </div>
                 <div className="max-h-80 overflow-y-auto divide-y divide-stone-100">
-                  {/* Sample Messages */}
-                  <div className="p-3.5 hover:bg-amber-50/50 transition-colors cursor-pointer group">
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 bg-gradient-to-br from-amber-500 to-amber-600 text-stone-950 font-bold rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm shadow-amber-500/20 text-xs">
-                        U
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-0.5">
-                          <p className="text-xs font-semibold text-stone-900 group-hover:text-amber-800 transition-colors">User Name</p>
-                          <span className="text-[10px] text-stone-600">2h ago</span>
-                        </div>
-                        <p className="text-xs text-stone-600 truncate">New message about your recent activity...</p>
-                      </div>
+                  {loadingMessages ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-5 h-5 text-amber-600 animate-spin" />
                     </div>
-                  </div>
-                  <div className="p-3.5 hover:bg-amber-50/50 transition-colors cursor-pointer group">
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 bg-stone-900 text-amber-400 font-bold rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm text-xs">
-                        A
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-0.5">
-                          <p className="text-xs font-semibold text-stone-900 group-hover:text-amber-800 transition-colors">Admin</p>
-                          <span className="text-[10px] text-stone-600">5h ago</span>
-                        </div>
-                        <p className="text-xs text-stone-600 truncate">System notification regarding your account...</p>
-                      </div>
+                  ) : chatRooms.length === 0 ? (
+                    <div className="p-6 text-center text-xs text-stone-500">
+                      <MessageSquare className="w-8 h-8 mx-auto mb-2 text-stone-300" />
+                      Không có tin nhắn mới
                     </div>
-                  </div>
-                  <div className="p-3.5 hover:bg-amber-50/50 transition-colors cursor-pointer group">
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 bg-emerald-100 text-emerald-700 font-bold rounded-xl flex items-center justify-center flex-shrink-0 text-xs">
-                        S
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-0.5">
-                          <p className="text-xs font-semibold text-stone-900 group-hover:text-amber-800 transition-colors">Support</p>
-                          <span className="text-[10px] text-stone-600">1d ago</span>
+                  ) : (
+                    chatRooms.slice(0, 5).map((room, idx) => (
+                      <div
+                        key={room.id || idx}
+                        onClick={() => {
+                          setIsMessagesOpen(false);
+                          router.push('/dashboard/alerts');
+                        }}
+                        className="p-3.5 hover:bg-amber-50/50 transition-colors cursor-pointer group"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="w-9 h-9 bg-gradient-to-br from-amber-500 to-amber-600 text-stone-950 font-bold rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm shadow-amber-500/20 text-xs uppercase">
+                            {room.name ? room.name[0] : 'C'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-0.5">
+                              <p className="text-xs font-semibold text-stone-900 group-hover:text-amber-800 transition-colors truncate">
+                                {room.name || 'Phòng hội thoại'}
+                              </p>
+                              <span className="text-[10px] text-stone-400 whitespace-nowrap ml-2">
+                                {formatRelativeTime(room.createdAt)}
+                              </span>
+                            </div>
+                            <p className="text-xs text-stone-500 truncate">
+                              {room.participants?.length ? `${room.participants.length} thành viên tham gia` : 'Bấm để xem chi tiết...'}
+                            </p>
+                          </div>
                         </div>
-                        <p className="text-xs text-stone-600 truncate">Response to your support ticket...</p>
                       </div>
-                    </div>
-                  </div>
+                    ))
+                  )}
                 </div>
                 <div className="p-2.5 border-t border-amber-100 bg-stone-50/50 text-center">
-                  <button className="text-xs text-amber-700 hover:text-amber-800 font-medium py-1 px-3 rounded-lg hover:bg-amber-100/50 transition-all">
+                  <button
+                    onClick={() => {
+                      setIsMessagesOpen(false);
+                      router.push('/dashboard/alerts');
+                    }}
+                    className="text-xs text-amber-700 hover:text-amber-800 font-medium py-1 px-3 rounded-lg hover:bg-amber-100/50 transition-all"
+                  >
                     {t('common.viewAll')} {t('common.messages')} →
                   </button>
                 </div>
@@ -333,7 +425,11 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
             title={t('common.notifications')}
           >
             <Bell className="w-5 h-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
+            {unreadNotificationCount > 0 ? (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-rose-500 text-[10px] text-white font-bold rounded-full ring-2 ring-white flex items-center justify-center">
+                {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+              </span>
+            ) : null}
           </button>
 
           {/* Notifications Dropdown */}
@@ -348,6 +444,11 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-rose-500"></span>
                     <h3 className="font-semibold text-stone-900 text-sm">{t('common.notifications')}</h3>
+                    {unreadNotificationCount > 0 && (
+                      <span className="text-[10px] bg-rose-100 text-rose-700 font-bold px-1.5 py-0.5 rounded-full">
+                        {unreadNotificationCount} mới
+                      </span>
+                    )}
                   </div>
                   <button
                     onClick={() => setIsNotificationsOpen(false)}
@@ -357,65 +458,72 @@ const Header = ({ onToggleSidebar }: HeaderProps) => {
                   </button>
                 </div>
                 <div className="max-h-80 overflow-y-auto divide-y divide-stone-100">
-                  <div className="p-3.5 hover:bg-amber-50/50 transition-colors cursor-pointer group">
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <Bell className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-0.5">
-                          <p className="text-xs font-semibold text-stone-900 group-hover:text-amber-800 transition-colors">Alert</p>
-                          <span className="text-[10px] text-stone-600">1m ago</span>
-                        </div>
-                        <p className="text-xs text-stone-600">System maintenance scheduled for tonight at 2 AM</p>
-                      </div>
+                  {loadingNotifications ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-5 h-5 text-amber-600 animate-spin" />
                     </div>
-                  </div>
-                  <div className="p-3.5 hover:bg-amber-50/50 transition-colors cursor-pointer group">
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 bg-emerald-100 text-emerald-700 font-bold rounded-xl flex items-center justify-center flex-shrink-0 text-sm">
-                        ✓
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-0.5">
-                          <p className="text-xs font-semibold text-stone-900 group-hover:text-amber-800 transition-colors">Success</p>
-                          <span className="text-[10px] text-stone-600">30m ago</span>
-                        </div>
-                        <p className="text-xs text-stone-600">New operator account created successfully</p>
-                      </div>
+                  ) : notifications.length === 0 ? (
+                    <div className="p-6 text-center text-xs text-stone-500">
+                      <Bell className="w-8 h-8 mx-auto mb-2 text-stone-300" />
+                      Chưa có thông báo nào
                     </div>
-                  </div>
-                  <div className="p-3.5 hover:bg-amber-50/50 transition-colors cursor-pointer group">
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 bg-amber-100 text-amber-700 font-bold rounded-xl flex items-center justify-center flex-shrink-0 text-sm">
-                        !
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-0.5">
-                          <p className="text-xs font-semibold text-stone-900 group-hover:text-amber-800 transition-colors">Warning</p>
-                          <span className="text-[10px] text-stone-600">2h ago</span>
+                  ) : (
+                    notifications.slice(0, 5).map((notif) => {
+                      const isUnread = notif.status === 'UNREAD';
+                      return (
+                        <div
+                          key={notif.id}
+                          onClick={() => handleNotificationClick(notif)}
+                          className={`p-3.5 transition-colors cursor-pointer group ${
+                            isUnread ? 'bg-amber-50/40 hover:bg-amber-100/50' : 'hover:bg-stone-50'
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div
+                              className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                                isUnread
+                                  ? 'bg-rose-100 text-rose-600'
+                                  : 'bg-stone-100 text-stone-500'
+                              }`}
+                            >
+                              <Bell className="w-4 h-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between mb-0.5">
+                                <p
+                                  className={`text-xs truncate transition-colors ${
+                                    isUnread
+                                      ? 'font-bold text-stone-900 group-hover:text-amber-800'
+                                      : 'font-medium text-stone-600'
+                                  }`}
+                                >
+                                  {notif.title}
+                                </p>
+                                <span className="text-[10px] text-stone-400 whitespace-nowrap ml-2">
+                                  {formatRelativeTime(notif.createdAt)}
+                                </span>
+                              </div>
+                              <p className="text-xs text-stone-500 line-clamp-2">
+                                {notif.message}
+                              </p>
+                            </div>
+                            {isUnread && (
+                              <span className="w-2 h-2 rounded-full bg-rose-500 mt-1 flex-shrink-0"></span>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-xs text-stone-600">High transaction volume detected</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-3.5 hover:bg-amber-50/50 transition-colors cursor-pointer group">
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 bg-sky-100 text-sky-700 font-bold rounded-xl flex items-center justify-center flex-shrink-0 text-sm">
-                        i
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-0.5">
-                          <p className="text-xs font-semibold text-stone-900 group-hover:text-amber-800 transition-colors">Info</p>
-                          <span className="text-[10px] text-stone-600">1d ago</span>
-                        </div>
-                        <p className="text-xs text-stone-600">Weekly report is ready for review</p>
-                      </div>
-                    </div>
-                  </div>
+                      );
+                    })
+                  )}
                 </div>
                 <div className="p-2.5 border-t border-amber-100 bg-stone-50/50 text-center">
-                  <button className="text-xs text-amber-700 hover:text-amber-800 font-medium py-1 px-3 rounded-lg hover:bg-amber-100/50 transition-all">
+                  <button
+                    onClick={() => {
+                      setIsNotificationsOpen(false);
+                      router.push('/dashboard/notifications');
+                    }}
+                    className="text-xs text-amber-700 hover:text-amber-800 font-medium py-1 px-3 rounded-lg hover:bg-amber-100/50 transition-all"
+                  >
                     {t('common.viewAll')} {t('common.notifications')} →
                   </button>
                 </div>

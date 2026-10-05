@@ -62,12 +62,13 @@ class ApiClient {
     // If headers are provided and don't have Content-Type, and body is empty, don't add it
     const providedHeaders = options.headers as HeadersInit | undefined;
     const hasContentType = providedHeaders && 'Content-Type' in providedHeaders;
+    const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
     const hasBody = options.body !== undefined && options.body !== '';
     
     const defaultHeaders: HeadersInit = {
       Accept: 'application/json',
-      // Only add Content-Type if body exists and Content-Type is not explicitly provided
-      ...(hasBody && !hasContentType ? { 'Content-Type': 'application/json' } : {}),
+      // Only add Content-Type if body exists, is not FormData, and Content-Type is not explicitly provided
+      ...(hasBody && !hasContentType && !isFormData ? { 'Content-Type': 'application/json' } : {}),
     };
 
     // Add Authorization header if token exists
@@ -77,7 +78,7 @@ class ApiClient {
     }
 
     // Get cookies from document if available
-    const cookies = document.cookie;
+    const cookies = typeof document !== 'undefined' ? document.cookie : '';
 
     const config: RequestInit = {
       ...options,
@@ -184,22 +185,20 @@ class ApiClient {
     body?: any,
     options?: RequestInit
   ): Promise<ApiResponse<T>> {
-    // Handle empty string body (for endpoints like logout that require empty body)
-    let requestBody: string | undefined;
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+    let requestBody: any;
     
-    if (body === '') {
+    if (isFormData) {
+      requestBody = body;
+    } else if (body === '') {
       requestBody = '';
     } else if (body !== undefined) {
       requestBody = JSON.stringify(body);
     }
     
-    // If body is empty string, don't include Content-Type header
-    // Only include Accept and Authorization headers
     const customHeaders: HeadersInit = {};
     if (body === '') {
-      // For empty body, only set Accept header (no Content-Type)
       customHeaders['Accept'] = 'application/json';
-      // Authorization will be added by request method if token exists
     }
     
     return this.request<T>(endpoint, {
@@ -215,10 +214,19 @@ class ApiClient {
     body?: any,
     options?: RequestInit
   ): Promise<ApiResponse<T>> {
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+    let requestBody: any;
+
+    if (isFormData) {
+      requestBody = body;
+    } else if (body !== undefined) {
+      requestBody = JSON.stringify(body);
+    }
+
     return this.request<T>(endpoint, {
       ...options,
       method: 'PUT',
-      body: body ? JSON.stringify(body) : undefined,
+      body: requestBody,
     });
   }
 
@@ -227,10 +235,19 @@ class ApiClient {
     body?: any,
     options?: RequestInit
   ): Promise<ApiResponse<T>> {
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+    let requestBody: any;
+
+    if (isFormData) {
+      requestBody = body;
+    } else if (body !== undefined) {
+      requestBody = JSON.stringify(body);
+    }
+
     return this.request<T>(endpoint, {
       ...options,
       method: 'PATCH',
-      body: body ? JSON.stringify(body) : undefined,
+      body: requestBody,
     });
   }
 
